@@ -11,13 +11,16 @@ import {
 const WALLET_NAME = process.env.OWS_WALLET_NAME || "lexon-wallet";
 const BASE_RPC = process.env.BASE_RPC_URL || "https://mainnet.base.org";
 
-// Policy JSON for OWS — max $2/tx, $10/day on Base only
+// OWS policy: Base mainnet only + expiry (spending limits enforced in app layer)
 const POLICY_JSON = JSON.stringify({
-  name: "lexon-policy",
+  id: "lexon-base-policy",
+  name: "Lexon Base Policy",
+  version: 1,
+  action: "deny",
+  created_at: new Date().toISOString(),
   rules: [
-    { type: "max_amount_per_tx", value: "2000000" },   // 2 USDC (6 decimals)
-    { type: "daily_limit",       value: "10000000" },  // 10 USDC
-    { type: "chain_allowlist",   value: ["eip155:8453"] },
+    { type: "allowed_chains", chain_ids: ["eip155:8453"] },
+    { type: "expires_at", timestamp: "2026-05-01T00:00:00Z" },
   ],
 });
 
