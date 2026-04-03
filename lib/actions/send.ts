@@ -6,6 +6,7 @@ import {
 } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { notifyRecipient } from "../xmtp";
+import { isAllowed } from "../allowlist";
 import { isAddress, parseUnits, encodeFunctionData, serializeTransaction } from "viem";
 
 export async function sendUSDC(to: string, amount: string): Promise<string> {
@@ -19,6 +20,15 @@ export async function sendUSDC(to: string, amount: string): Promise<string> {
   }
   if (amountNum > 2) {
     return `❌ Güvenlik limiti: tek işlemde max $2 USDC gönderilebilir.`;
+  }
+
+  if (!isAllowed(to)) {
+    return (
+      `⚠️ *Güvenilmeyen adres*\n\n` +
+      `\`${to}\`\n\n` +
+      `Bu adres izin listende yok. Göndermek istiyorsan önce şunu yaz:\n` +
+      `/izinver ${to}`
+    );
   }
 
   try {

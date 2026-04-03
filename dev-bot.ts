@@ -7,45 +7,76 @@ import { transcribeVoice } from "./lib/voice";
 import { sendUSDC } from "./lib/actions/send";
 import { checkBalance } from "./lib/actions/balance";
 import { getWalletAddress } from "./lib/wallet";
+import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./lib/allowlist";
 
-// Load .env.local
 import { config } from "dotenv";
-const result = config({ path: ".env.local" });
-console.log("dotenv:", result.error || "OK");
-console.log("TOKEN:", process.env.TELEGRAM_BOT_TOKEN ? "SET" : "MISSING");
-console.log("OPENROUTER:", process.env.OPENROUTER_API_KEY ? "SET" : "MISSING");
+config({ path: ".env.local" });
 
 const token = process.env.TELEGRAM_BOT_TOKEN!;
 const bot = new Bot(token);
 
 const HELP_TEXT = `
-🔷 *Lexon* — Base üzerinde doğal dil ile DeFi
+🔷 *Lexon* — DeFi on Base via natural language
 
-💸 *USDC Gönder*
-"0x1234...abcd adresine 1.5 USDC gönder"
+💸 *Send USDC*
+"Send 1.5 USDC to 0x1234...abcd"
 
-💰 *Bakiye Sorgula*
-"Bakiyem ne kadar?"
+💰 *Check Balance*
+"What's my balance?"
 
-🎙 Sesli mesaj da çalışır.
+🎙 Voice notes work too.
 
-/cuzdan — cüzdan adresini göster
-/yardim — bu menü
+/wallet — Show wallet address
+/list — Show allowed addresses
+/allow <address> [label] — Add to allowlist
+/remove <address> — Remove from allowlist
+/help — This menu
 `.trim();
 
 bot.command("start", async (ctx) => {
-  await ctx.reply(`Merhaba! 👋 Ben *Lexon*\n\n${HELP_TEXT}`, { parse_mode: "Markdown" });
+  await ctx.reply(`👋 Hey! I'm *Lexon*\n\n${HELP_TEXT}`, { parse_mode: "Markdown" });
 });
 
-bot.command(["yardim", "help"], async (ctx) => {
+bot.command("help", async (ctx) => {
   await ctx.reply(HELP_TEXT, { parse_mode: "Markdown" });
 });
 
-bot.command("cuzdan", async (ctx) => {
+bot.command("wallet", async (ctx) => {
   const address = getWalletAddress();
-  await ctx.reply(`🔷 *Lexon Cüzdanı*\n\n\`${address}\`\n\n[Basescan](https://basescan.org/address/${address})`, {
-    parse_mode: "Markdown",
-  });
+  await ctx.reply(
+    `🔷 *Lexon Wallet*\n\n\`${address}\`\n\n[View on Basescan](https://basescan.org/address/${address})`,
+    { parse_mode: "Markdown" }
+  );
+});
+
+bot.command("allow", async (ctx) => {
+  const parts = ctx.message.text.split(" ").slice(1);
+  const address = parts[0];
+  const label = parts.slice(1).join(" ") || "Personal";
+  if (!address?.startsWith("0x")) {
+    await ctx.reply("Usage: `/allow 0x... Label`", { parse_mode: "Markdown" });
+    return;
+  }
+  addToAllowlist(address, label);
+  await ctx.reply(`✅ Added: \`${address}\` — ${label}`, { parse_mode: "Markdown" });
+});
+
+bot.command("remove", async (ctx) => {
+  const address = ctx.message.text.split(" ")[1];
+  if (!address?.startsWith("0x")) {
+    await ctx.reply("Usage: `/remove 0x...`", { parse_mode: "Markdown" });
+    return;
+  }
+  removeFromAllowlist(address);
+  await ctx.reply(`🗑 Removed: \`${address}\``, { parse_mode: "Markdown" });
+});
+
+bot.command("list", async (ctx) => {
+  const all = getAllowlist();
+  const entries = Object.entries(all);
+  if (!entries.length) { await ctx.reply("No addresses in allowlist."); return; }
+  const lines = entries.map(([addr, label]) => `• \`${addr.slice(0, 6)}...${addr.slice(-4)}\` — ${label}`);
+  await ctx.reply(`📋 *Allowed Addresses*\n\n${lines.join("\n")}`, { parse_mode: "Markdown" });
 });
 
 bot.on("message:text", async (ctx) => {
@@ -67,14 +98,14 @@ bot.on("message:voice", async (ctx) => {
     const action = await parseIntent(transcript);
     await handle(ctx, action);
   } catch {
-    await ctx.reply("❌ Ses mesajı işlenemedi.");
+    await ctx.reply("❌ Could not process voice message.");
   }
 });
 
 async function handle(ctx: any, action: any) {
   switch (action.type) {
     case "send": {
-      const msg = await ctx.reply("⏳ İşlem hazırlanıyor...");
+      const msg = await ctx.reply("⏳ Preparing transaction...");
       const result = await sendUSDC(action.to, action.amount);
       await ctx.api.editMessageText(ctx.chat.id, msg.message_id, result, { parse_mode: "Markdown" });
       break;
@@ -89,13 +120,13 @@ async function handle(ctx: any, action: any) {
       await ctx.reply(HELP_TEXT, { parse_mode: "Markdown" });
       break;
     case "unknown":
-      await ctx.reply(`🤔 ${action.message}`);
+      await ctx.reply(`🤔 ${action.message}\n\nType /help to see what I can do.`);
       break;
   }
 }
 
-console.log("🤖 Lexon bot başlatıldı (polling mode)...");
+console.log("🤖 Lexon bot started (polling mode)...");
 bot.start().catch((err) => {
-  console.error("Bot başlatma hatası:", err);
+  console.error("Bot error:", err);
   process.exit(1);
 });
