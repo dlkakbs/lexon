@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lexon — DeFi via Natural Language on Base",
-  description: "Send USDC, check balances, and interact with Base blockchain using plain text or voice. Powered by OWS + Claude.",
+  title: "Lexon — DeFi Agent on Base",
+  description: "Self-hosted Telegram DeFi agent. Send USDC, swap, bridge cross-chain, track portfolio — via text or voice. Policy-gated by OWS. Built for OWS Hackathon 2026.",
 };
 
 export default function RootLayout({
