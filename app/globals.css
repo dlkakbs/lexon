@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --bg:          #080c08;
-  --bg-panel:    #0d120d;
-  --bg-card:     #0f150f;
-  --green:       #00ff41;
-  --green-dim:   #00c032;
-  --green-dark:  #005c18;
-  --cyan:        #00d4ff;
-  --yellow:      #ffd700;
+  --bg:          #090705;
+  --bg-panel:    #0f0c09;
+  --bg-card:     #130f0b;
+  --green:       #BB734B;   /* Brown Sugar  — primary accent  */
+  --green-dim:   #9A5A32;
+  --green-dark:  #3D2C22;   /* Bistre       — subtle bg tint  */
+  --cyan:        #D4956A;   /* warm highlight                 */
+  --yellow:      #F5EBE0;   /* cream / ivory                  */
   --red:         #ff5f56;
-  --text:        #d4f5d4;
-  --muted:       #4a7a4a;
-  --border:      rgba(0, 255, 65, 0.15);
-  --border-dim:  rgba(0, 255, 65, 0.07);
+  --text:        #EDD9C0;   /* warm cream text                */
+  --muted:       #7A5A3A;
+  --border:      rgba(187, 115, 75, 0.2);
+  --border-dim:  rgba(187, 115, 75, 0.08);
 }
 
 * { box-sizing: border-box; }
@@ -59,8 +59,8 @@ body::before {
 }
 
 @keyframes glow-pulse {
-  0%, 100% { text-shadow: 0 0 8px rgba(0,255,65,0.4); }
-  50%       { text-shadow: 0 0 20px rgba(0,255,65,0.8), 0 0 40px rgba(0,255,65,0.3); }
+  0%, 100% { text-shadow: 0 0 8px rgba(187,115,75,0.4); }
+  50%       { text-shadow: 0 0 20px rgba(187,115,75,0.75), 0 0 40px rgba(187,115,75,0.25); }
 }
 
 @keyframes scan {
@@ -166,8 +166,8 @@ body::before {
 }
 
 .btn-green:hover {
-  background: #1fff55;
-  box-shadow: 0 0 20px rgba(0,255,65,0.4);
+  background: #D4956A;
+  box-shadow: 0 0 20px rgba(187,115,75,0.45);
   transform: translateY(-1px);
 }
 
