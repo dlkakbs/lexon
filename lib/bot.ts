@@ -29,6 +29,7 @@ Send a voice note — Whisper transcribes it automatically.
 • Only allowlisted addresses
 
 /wallet — Show Lexon wallet address
+/fund — Buy USDC via MoonPay
 /list — Show allowed addresses
 /allow <address> [label] — Add address to allowlist
 /remove <address> — Remove address from allowlist
@@ -92,6 +93,25 @@ function registerHandlers(bot: Bot, token: string) {
     removeFromAllowlist(address);
     await ctx.reply(
       `🗑 *Address removed*\n\n\`${address}\``,
+      { parse_mode: "Markdown" }
+    );
+  });
+
+  // /fund
+  bot.command("fund", async (ctx) => {
+    const address = getWalletAddress();
+    const moonpayUrl =
+      `https://buy.moonpay.com?` +
+      `apiKey=pk_live_test&` +
+      `currencyCode=usdc_base&` +
+      `walletAddress=${address}&` +
+      `colorCode=%23BB734B`;
+
+    await ctx.reply(
+      `💳 *Fund your Lexon wallet*\n\n` +
+      `Wallet: \`${address}\`\n\n` +
+      `👉 [Buy USDC on Base via MoonPay](${moonpayUrl})\n\n` +
+      `_Or run_ \`ows fund deposit --wallet lexon-wallet\` _in terminal._`,
       { parse_mode: "Markdown" }
     );
   });

@@ -28,6 +28,7 @@ const HELP_TEXT = `
 🎙 Voice notes work too.
 
 /wallet — Show wallet address
+/fund — Buy USDC via MoonPay
 /list — Show allowed addresses
 /allow <address> [label] — Add to allowlist
 /remove <address> — Remove from allowlist
@@ -70,6 +71,24 @@ bot.command("remove", async (ctx) => {
   }
   removeFromAllowlist(address);
   await ctx.reply(`🗑 Removed: \`${address}\``, { parse_mode: "Markdown" });
+});
+
+bot.command("fund", async (ctx) => {
+  const address = getWalletAddress();
+  const moonpayUrl =
+    `https://buy.moonpay.com?` +
+    `apiKey=pk_live_test&` +
+    `currencyCode=usdc_base&` +
+    `walletAddress=${address}&` +
+    `colorCode=%23BB734B`;
+
+  await ctx.reply(
+    `💳 *Fund your Lexon wallet*\n\n` +
+    `Wallet: \`${address}\`\n\n` +
+    `👉 [Buy USDC on Base via MoonPay](${moonpayUrl})\n\n` +
+    `_Or run_ \`ows fund deposit --wallet lexon-wallet\` _in terminal._`,
+    { parse_mode: "Markdown" }
+  );
 });
 
 bot.command("list", async (ctx) => {
