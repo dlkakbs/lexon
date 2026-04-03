@@ -8,6 +8,19 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 ---
 
+## OWS + x402
+
+Lexon's core product is still a **self-hosted DeFi agent**. OWS is the security layer: it gives the agent a wallet and enforces spend rules before signing. x402 is an optional commerce layer on top: a Lexon instance can expose paid capabilities to other agents, or buy paid capabilities from them.
+
+In short:
+
+- **OWS** = agent wallet + spend controls
+- **x402** = optional agent-to-agent payments
+
+This means Lexon works fine as a personal/self-hosted DeFi agent even without x402. The x402 layer just makes the same agent extensible for paid capability exchange.
+
+---
+
 ## How it works
 
 ```
