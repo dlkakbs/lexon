@@ -365,7 +365,6 @@ function registerHandlers(bot: Bot, token: string) {
       const response = await fetch(fileUrl);
       const buffer = Buffer.from(await response.arrayBuffer());
       const transcript = await transcribeVoice(buffer);
-      await ctx.reply(`🎙 _"${transcript}"_`, { parse_mode: "Markdown" });
       await handleCommand(ctx, transcript);
     } catch {
       await ctx.reply("❌ Could not process voice message.");
