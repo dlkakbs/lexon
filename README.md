@@ -1,8 +1,8 @@
 # Lexon
 
-**Self-hosted DeFi agent on Base — text or voice, policy-gated by OWS.**
+**Self-hosted DeFi agent on Base — text or voice, policy-gated by OWS, with optional x402 commerce.**
 
-Lexon is a Telegram bot that lets you send USDC, swap tokens, bridge cross-chain, and monitor your portfolio using plain language. Each person runs their own instance with their own OWS wallet and custom policy limits.
+Lexon is a Telegram bot that lets you send USDC, swap tokens, bridge cross-chain, and monitor your portfolio using plain language. Each person runs their own instance with their own OWS wallet and custom policy limits. If you want, your instance can also publish paid capabilities or buy them from other agents over x402.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
@@ -39,6 +39,7 @@ XMTP notification sent to recipient
 | 📩 XMTP notifications | Recipient gets wallet-native alert on payment |
 | 💳 MoonPay on-ramp | Fund wallet without leaving Telegram |
 | ⚙️ Self-hosted | Run your own instance — your keys, your wallet, your limits |
+| 💸 Optional x402 layer | Publish paid agent capabilities or buy other agent services |
 
 ---
 
@@ -47,6 +48,7 @@ XMTP notification sent to recipient
 | Tool | Role |
 |---|---|
 | **[OWS](https://docs.openwallet.sh/)** | Wallet management + policy-gated signing (8 rules) |
+| **[x402](https://docs.x402.org/)** | Optional agent-to-agent payment layer for paid capabilities |
 | **[Base](https://base.org/)** | L2 network — native USDC, fast finality |
 | **[Claude](https://openrouter.ai/)** via OpenRouter / Anthropic / OpenAI | Intent parsing from natural language |
 | **[Whisper](https://openai.com/research/whisper)** | Voice note transcription |

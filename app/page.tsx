@@ -61,7 +61,7 @@ export default function Home() {
             <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 480, marginBottom: "2rem" }}>
               Send USDC · swap tokens · bridge cross-chain · track portfolio.
               All via Telegram, text or voice. Policy-gated by OWS.
-              Self-hosted — your keys, your limits.
+              Self-hosted — your keys, your limits, your agent.
             </p>
 
             <div className="flex flex-wrap gap-3 fade-in-5">
@@ -267,6 +267,12 @@ export default function Home() {
                 cmd: "npx tsx setup.ts",
                 desc: "Interactive wizard configures all keys and limits. Your instance, your OWS wallet, your policy.",
               },
+              {
+                tag: "x402", tagColor: "tag-yellow",
+                title: "Agent Commerce Layer",
+                cmd: "/api/x402/catalog",
+                desc: "Optional x402 layer for publishing paid capabilities and buying other agent services without changing the core self-hosted flow.",
+              },
             ].map((f) => (
               <div key={f.title} className="term-card">
                 <div className="flex items-start justify-between mb-3">
@@ -407,6 +413,7 @@ export default function Home() {
                 <tbody>
                   {[
                     { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "native: chain allowlist + expiry; app-layer: spend guards" },
+                    { mod: "@x402/next · @x402/fetch",   role: "Paid Capabilities",          note: "optional commerce layer for selling and buying agent services" },
                     { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
                     { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
                     { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
@@ -555,7 +562,7 @@ export default function Home() {
         </h2>
         <p style={{ color: "var(--muted)", fontSize: 15, marginBottom: 36, lineHeight: 1.8 }}>
           Open Telegram. Type or speak. Watch it settle on Base.<br />
-          No wallet setup. No dApp. Just a chat.
+          Self-host your own agent. Add paid capabilities if you want.
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
           <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"

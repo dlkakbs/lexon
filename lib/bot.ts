@@ -14,6 +14,11 @@ import { getPortfolio, getPositions, getTransactionHistory, getPnL } from "./ski
 import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
 import {
+  enforceTransactionGuards,
+  recordSuccessfulTransaction,
+  requireHighValueConfirmation,
+} from "./guards";
+import {
   logInteraction,
   getUserContext,
   getSpendingSummary,
@@ -21,6 +26,10 @@ import {
   isKnownAddress,
   queryMemory,
 } from "./memory";
+
+function isSuccessfulResponse(response: string): boolean {
+  return response.startsWith("✅");
+}
 
 const HELP_TEXT = `
 🔷 *Lexon* — DeFi on Base via natural language
@@ -385,6 +394,7 @@ async function handleCommand(ctx: Context, override?: string) {
   switch (action.type) {
     case "send": {
       let to = action.to;
+      const amount = Number.parseFloat(action.amount);
 
       // İsimle gönderim: "Ali'ye gönder" → adres çözümle
       if ((!to || !to.startsWith("0x")) && action.name && userId) {
@@ -409,8 +419,33 @@ async function handleCommand(ctx: Context, override?: string) {
         }
       }
 
+      const confirmation = requireHighValueConfirmation(userId, { ...action, to }, amount);
+      if (!confirmation.ok) {
+        response = confirmation.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
+
+      const guard = enforceTransactionGuards({
+        kind: "send",
+        amountUSDC: Number.isFinite(amount) ? amount : undefined,
+        recipient: to,
+      });
+      if (!guard.ok) {
+        response = guard.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
+
       const msg = await ctx.reply("⏳ İşlem hazırlanıyor...");
       response = await sendUSDC(to, action.amount);
+      if (isSuccessfulResponse(response)) {
+        recordSuccessfulTransaction({
+          kind: "send",
+          amountUSDC: Number.isFinite(amount) ? amount : undefined,
+          recipient: to,
+        });
+      }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
         parse_mode: "Markdown",
       });
@@ -431,8 +466,31 @@ async function handleCommand(ctx: Context, override?: string) {
       break;
     }
     case "bridge": {
+      const amount = Number.parseFloat(action.amount);
+      const amountUSDC = action.fromToken.toUpperCase() === "USDC" && Number.isFinite(amount) ? amount : undefined;
+      const confirmation = requireHighValueConfirmation(userId, action, amountUSDC);
+      if (!confirmation.ok) {
+        response = confirmation.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
+      const guard = enforceTransactionGuards({
+        kind: "bridge",
+        amountUSDC,
+      });
+      if (!guard.ok) {
+        response = guard.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
       const msg = await ctx.reply(`⏳ Li.Fi route bulunuyor (${action.fromChain} → ${action.toChain})...`);
       response = await bridge(action.fromChain, action.toChain, action.fromToken, action.amount, action.toToken);
+      if (isSuccessfulResponse(response)) {
+        recordSuccessfulTransaction({
+          kind: "bridge",
+          amountUSDC,
+        });
+      }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, { parse_mode: "Markdown" });
       break;
     }
@@ -458,16 +516,51 @@ async function handleCommand(ctx: Context, override?: string) {
       break;
     }
     case "swap_eth_usdc": {
+      const guard = enforceTransactionGuards({ kind: "swap" });
+      if (!guard.ok) {
+        response = guard.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
       const msg = await ctx.reply("⏳ ETH → USDC swap...");
       response = await swapETHtoUSDC(action.amount, action.dex);
+      if (isSuccessfulResponse(response)) {
+        recordSuccessfulTransaction({ kind: "swap" });
+      }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
         parse_mode: "Markdown",
       });
       break;
     }
     case "swap_usdc_eth": {
+      const amount = Number.parseFloat(action.amount);
+      const confirmation = requireHighValueConfirmation(
+        userId,
+        action,
+        Number.isFinite(amount) ? amount : undefined
+      );
+      if (!confirmation.ok) {
+        response = confirmation.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
+      const guard = enforceTransactionGuards({
+        kind: "swap",
+        amountUSDC: Number.isFinite(amount) ? amount : undefined,
+      });
+      if (!guard.ok) {
+        response = guard.message;
+        await ctx.reply(response, { parse_mode: "Markdown" });
+        break;
+      }
       const msg = await ctx.reply("⏳ USDC → ETH swap...");
       response = await swapUSDCtoETH(action.amount, action.dex);
+      if (isSuccessfulResponse(response)) {
+        recordSuccessfulTransaction({
+          kind: "swap",
+          amountUSDC: Number.isFinite(amount) ? amount : undefined,
+        });
+      }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
         parse_mode: "Markdown",
       });
