@@ -217,7 +217,7 @@ export default function Home() {
                 tag: "data", tagColor: "tag-cyan",
                 title: "Portfolio (Zerion)",
                 cmd: "/portfolio · /pnl",
-                desc: "Multi-chain holdings, positions, and 24h PnL across 40+ networks.",
+                desc: "View holdings, positions, and 24h PnL across all chains where your address has assets — powered by Zerion.",
               },
               {
                 tag: "ai", tagColor: "tag-yellow",
@@ -381,7 +381,7 @@ export default function Home() {
                     { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "8-rule policy, OWS Hackathon 2026" },
                     { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
                     { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
-                    { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "40+ chains, OWS partner" },
+                    { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
                     { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Multi-provider: openrouter | anthropic | openai" },
                     { mod: "OpenAI Whisper",             role: "Voice Transcription",       note: "Telegram voice note → text, any language" },
                     { mod: "@xmtp/xmtp-js",             role: "Payment Notifications",     note: "Wallet-native alerts on transfer" },
