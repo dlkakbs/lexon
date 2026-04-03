@@ -104,26 +104,25 @@ export default function Home() {
               </div>
               <div className="term-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-                {/* Boot line */}
                 <div className="text-muted" style={{ fontSize: 11, marginBottom: 4 }}>
                   [OK] lexon agent started · Base mainnet · OWS policy active
                 </div>
 
                 <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">Arbitrum&apos;a 10 USDC bridge et</span>
+                  <span className="msg-user">Bridge 10 USDC to Arbitrum</span>
                 </div>
                 <div>
                   <span className="msg-bot">
-                    <span className="text-yellow">▶ Li.Fi route found</span><br />
+                    <span className="text-yellow">Li.Fi route found</span><br />
                     Base → Arbitrum · 10 USDC<br />
                     fee: ~$0.12 · est. 45s<br /><br />
-                    <span className="text-muted">OWS policy: ✓ chain allowed</span><br />
-                    <span className="text-muted">OWS policy: ✓ under daily limit</span>
+                    <span className="text-muted">OWS policy: chain allowed</span><br />
+                    <span className="text-muted">OWS policy: under daily limit</span>
                   </span>
                 </div>
                 <div>
                   <span className="msg-bot">
-                    <span className="text-green">✓ Bridge tx signed by OWS</span><br />
+                    <span className="text-green">Bridge tx signed by OWS</span><br />
                     <span style={{ fontSize: 11, color: "var(--muted)" }}>0x3f8a...c291 · Arbiscan ↗</span>
                   </span>
                 </div>
@@ -131,11 +130,11 @@ export default function Home() {
                 <hr className="term-divider" style={{ margin: "4px 0" }} />
 
                 <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">Portföyüm ne durumda?</span>
+                  <span className="msg-user">Show my portfolio</span>
                 </div>
                 <div>
                   <span className="msg-bot">
-                    <span className="text-cyan">📊 Portfolio (Zerion)</span><br />
+                    <span className="text-cyan">Portfolio (Zerion)</span><br />
                     Total: <span className="text-green">$284.50</span><br />
                     ETH:  0.081 · Base: $48.20<br />
                     Arb:  $119.40 · Poly: $22.10<br /><br />
@@ -146,11 +145,11 @@ export default function Home() {
                 <hr className="term-divider" style={{ margin: "4px 0" }} />
 
                 <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">0.001 ETH swap to USDC</span>
+                  <span className="msg-user">Swap 0.001 ETH to USDC</span>
                 </div>
                 <div>
                   <span className="msg-bot">
-                    <span className="text-green">✓ Swap executed · Uniswap V3</span><br />
+                    <span className="text-green">Swap executed · Uniswap V3</span><br />
                     <span style={{ fontSize: 11, color: "var(--muted)" }}>0.001 ETH → 2.87 USDC</span>
                   </span>
                 </div>
@@ -172,14 +171,13 @@ export default function Home() {
         </div>
         <div className="grid md:grid-cols-4 gap-4">
           {[
-            { n: "01", icon: "🎙", title: "Text or voice",  desc: "Send a Telegram message or voice note in any language." },
-            { n: "02", icon: "🧠", title: "AI parses intent", desc: "Claude (OpenRouter/Anthropic/OpenAI) extracts the action." },
-            { n: "03", icon: "🛡", title: "OWS enforces policy", desc: "8 configurable rules check limits before signing." },
-            { n: "04", icon: "⚡", title: "On-chain, done",  desc: "Tx broadcast to Base. Basescan link returned instantly." },
+            { n: "01", title: "Text or voice",       desc: "Send a Telegram message or voice note in any language — Whisper handles the rest." },
+            { n: "02", title: "AI parses intent",    desc: "Claude (OpenRouter / Anthropic / OpenAI) extracts the action from natural language." },
+            { n: "03", title: "OWS enforces policy", desc: "8 configurable rules — per-tx limit, daily cap, cooldown, contract whitelist — check before signing." },
+            { n: "04", title: "On-chain, done",      desc: "Transaction broadcast to Base. Basescan link returned instantly." },
           ].map((s) => (
             <div key={s.n} className="term-card">
-              <div className="text-muted text-xs mb-3" style={{ letterSpacing: "0.1em" }}>STEP_{s.n}</div>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{s.icon}</div>
+              <div className="text-muted text-xs mb-4" style={{ letterSpacing: "0.1em" }}>STEP_{s.n}</div>
               <div className="text-green font-bold text-sm mb-2">{s.title}</div>
               <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.7 }}>{s.desc}</div>
             </div>
@@ -199,80 +197,79 @@ export default function Home() {
             {[
               {
                 tag: "transfer", tagColor: "tag-green",
-                icon: "💸", title: "Send USDC",
+                title: "Send USDC",
                 cmd: '"Send 5 USDC to 0x742d..."',
-                desc: "Named contacts supported — \"Ali'ye 2 USDC gönder\" via Honcho memory.",
+                desc: "Named contacts supported via Honcho memory. \"Send 2 USDC to Alice\" resolves to address.",
               },
               {
                 tag: "defi", tagColor: "tag-green",
-                icon: "🔄", title: "Swap Tokens",
+                title: "Swap Tokens",
                 cmd: '"Swap 0.001 ETH to USDC"',
-                desc: "Uniswap V3 · Universal Router · Aerodrome. Live ETH price for $100 USD limit.",
+                desc: "Uniswap V3 · Universal Router · Aerodrome. Live ETH price used for $100 USD swap limit.",
               },
               {
                 tag: "bridge", tagColor: "tag-cyan",
-                icon: "🌉", title: "Cross-chain Bridge",
+                title: "Cross-chain Bridge",
                 cmd: '"Bridge 10 USDC to Arbitrum"',
-                desc: "17+ EVM chains via Li.Fi. OWS signs both approve + bridge tx.",
+                desc: "17+ EVM chains via Li.Fi. OWS signs both the approve and bridge transactions.",
               },
               {
                 tag: "data", tagColor: "tag-cyan",
-                icon: "📊", title: "Portfolio (Zerion)",
+                title: "Portfolio (Zerion)",
                 cmd: "/portfolio · /pnl",
-                desc: "Multi-chain holdings, positions, 24h PnL across 40+ networks.",
+                desc: "Multi-chain holdings, positions, and 24h PnL across 40+ networks.",
               },
               {
                 tag: "ai", tagColor: "tag-yellow",
-                icon: "🧠", title: "Personalized Memory",
-                cmd: '"Bu hafta ne harcadım?"',
-                desc: "Honcho remembers your habits, named addresses, spending history.",
+                title: "Personalized Memory",
+                cmd: '"How much did I spend this week?"',
+                desc: "Honcho remembers your habits, named addresses, and spending history across sessions.",
               },
               {
                 tag: "voice", tagColor: "tag-green",
-                icon: "🎙", title: "Voice Commands",
+                title: "Voice Commands",
                 cmd: "Send a voice note",
-                desc: "OpenAI Whisper transcribes any language, any command.",
+                desc: "OpenAI Whisper transcribes voice notes in any language. Any command works via voice.",
               },
               {
                 tag: "security", tagColor: "tag-yellow",
-                icon: "🛡", title: "OWS Policy (8 rules)",
+                title: "OWS Policy (8 rules)",
                 cmd: "/policy",
-                desc: "Per-tx, daily, cooldown, contract whitelist — all configurable via .env.",
+                desc: "Per-tx, daily cap, cooldown, contract whitelist — all configurable via .env. Zero hardcoded limits.",
               },
               {
                 tag: "notify", tagColor: "tag-cyan",
-                icon: "📩", title: "XMTP Notifications",
+                title: "XMTP Notifications",
                 cmd: "auto on payment",
-                desc: "Recipient's wallet address gets a wallet-native payment alert.",
+                desc: "Recipient wallet address gets a wallet-native payment alert visible in Coinbase Wallet, Converse.",
               },
               {
                 tag: "onramp", tagColor: "tag-green",
-                icon: "💳", title: "MoonPay On-Ramp",
+                title: "MoonPay On-Ramp",
                 cmd: "/fund",
                 desc: "Buy USDC directly into the Lexon wallet without leaving Telegram.",
               },
               {
                 tag: "query", tagColor: "tag-green",
-                icon: "💰", title: "Balance & Price",
-                cmd: '"What\'s my balance?" /price',
-                desc: "ETH + USDC on Base. Live ETH price from Chainlink-style feed.",
+                title: "Balance & Price",
+                cmd: '"What\'s my balance?" · /price',
+                desc: "ETH + USDC balance on Base. Live ETH price.",
               },
               {
                 tag: "whitelist", tagColor: "tag-yellow",
-                icon: "✅", title: "Contract Whitelist",
-                cmd: "/approve /unapprove",
-                desc: "Manage OWS policy contract list from Telegram. Persisted to disk.",
+                title: "Contract Whitelist",
+                cmd: "/approve · /unapprove",
+                desc: "Manage the OWS policy contract list from Telegram. Persisted to disk between restarts.",
               },
               {
                 tag: "selfhost", tagColor: "tag-cyan",
-                icon: "⚙️", title: "Self-Hosted",
+                title: "Self-Hosted",
                 cmd: "npx tsx setup.ts",
-                desc: "Interactive wizard configures everything. Your instance, your keys.",
+                desc: "Interactive wizard configures all keys and limits. Your instance, your OWS wallet, your policy.",
               },
             ].map((f) => (
               <div key={f.title} className="term-card">
                 <div className="flex items-start justify-between mb-3">
-                  <span style={{ fontSize: 24 }}>{f.icon}</span>
                   <span className={`tag ${f.tagColor}`}>{f.tag}</span>
                 </div>
                 <div className="text-green font-bold text-sm mb-1">{f.title}</div>
@@ -309,14 +306,14 @@ export default function Home() {
                 <div><span className="text-cyan">&quot;rules&quot;</span>: [</div>
                 <div style={{ paddingLeft: 16 }}>
                   {[
-                    ['allowed_chains',           'eip155:8453 + 12 more'],
-                    ['max_value_per_tx',         'USDC $100   ← MAX_SEND_USDC'],
-                    ['max_value_per_day',        'USDC $100   ← MAX_DAILY_USDC'],
-                    ['max_tx_per_day',           '20          ← OWS_MAX_TX_PER_DAY'],
-                    ['cooldown',                 '30s         ← OWS_COOLDOWN_SECONDS'],
-                    ['max_per_address_day',      'USDC $50    ← OWS_MAX_PER_ADDRESS_DAILY'],
-                    ['allowed_contracts',        'Uniswap · Aerodrome · Li.Fi + more'],
-                    ['require_confirmation',     'above $25   ← OWS_CONFIRM_ABOVE_USDC'],
+                    ["allowed_chains",        "eip155:8453 + 12 more"],
+                    ["max_value_per_tx",      "USDC $100   <- MAX_SEND_USDC"],
+                    ["max_value_per_day",     "USDC $100   <- MAX_DAILY_USDC"],
+                    ["max_tx_per_day",        "20          <- OWS_MAX_TX_PER_DAY"],
+                    ["cooldown",              "30s         <- OWS_COOLDOWN_SECONDS"],
+                    ["max_per_address_day",   "USDC $50    <- OWS_MAX_PER_ADDRESS_DAILY"],
+                    ["allowed_contracts",     "Uniswap · Aerodrome · Li.Fi + more"],
+                    ["require_confirmation",  "above $25   <- OWS_CONFIRM_ABOVE_USDC"],
                   ].map(([rule, val]) => (
                     <div key={rule} style={{ marginBottom: 2 }}>
                       <span className="text-green">&quot;{rule}&quot;</span>
@@ -334,14 +331,14 @@ export default function Home() {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="text-muted text-xs mb-2" style={{ letterSpacing: "0.08em" }}>ALL RULES COME FROM .env.local — ZERO HARDCODED LIMITS</div>
             {[
-              { env: "MAX_SEND_USDC",            default: "100", desc: "Max USDC per transaction" },
-              { env: "MAX_DAILY_USDC",           default: "100", desc: "Daily USDC spending cap" },
-              { env: "MAX_SWAP_USD",             default: "100", desc: "Max swap value (ETH or USDC, live price)" },
-              { env: "OWS_MAX_TX_PER_DAY",       default: "20",  desc: "Transaction count limit" },
-              { env: "OWS_COOLDOWN_SECONDS",     default: "30",  desc: "Seconds between transactions" },
-              { env: "OWS_MAX_PER_ADDRESS_DAILY",default: "50",  desc: "Max per recipient per day" },
-              { env: "OWS_CONFIRM_ABOVE_USDC",   default: "25",  desc: "Ask confirmation above this" },
-              { env: "OWS_ALLOWED_CHAINS",       default: "13",  desc: "Comma-separated eip155 chain IDs" },
+              { env: "MAX_SEND_USDC",             default: "100", desc: "Max USDC per transaction" },
+              { env: "MAX_DAILY_USDC",            default: "100", desc: "Daily USDC spending cap" },
+              { env: "MAX_SWAP_USD",              default: "100", desc: "Max swap value (ETH or USDC, live price)" },
+              { env: "OWS_MAX_TX_PER_DAY",        default: "20",  desc: "Transaction count limit" },
+              { env: "OWS_COOLDOWN_SECONDS",      default: "30",  desc: "Seconds between transactions" },
+              { env: "OWS_MAX_PER_ADDRESS_DAILY", default: "50",  desc: "Max per recipient per day" },
+              { env: "OWS_CONFIRM_ABOVE_USDC",    default: "25",  desc: "Ask confirmation above this amount" },
+              { env: "OWS_ALLOWED_CHAINS",        default: "13",  desc: "Comma-separated eip155 chain IDs" },
             ].map((r) => (
               <div key={r.env} className="term-card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
@@ -381,17 +378,17 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {[
-                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "8-rule policy, OWS Hackathon 2026", tag: "tag-green" },
-                    { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed", tag: "tag-cyan" },
-                    { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history", tag: "tag-yellow" },
-                    { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "40+ chains, OWS partner", tag: "tag-cyan" },
-                    { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Multi-provider: openrouter | anthropic | openai", tag: "tag-yellow" },
-                    { mod: "OpenAI Whisper",             role: "Voice Transcription",       note: "Telegram voice note → text", tag: "tag-green" },
-                    { mod: "@xmtp/xmtp-js",             role: "Payment Notifications",     note: "Wallet-native alerts on transfer", tag: "tag-cyan" },
-                    { mod: "MoonPay",                   role: "USDC On-Ramp",              note: "/fund command, direct into OWS wallet", tag: "tag-green" },
-                    { mod: "viem",                      role: "Base Client",               note: "TX construction, USDC helpers, Uniswap ABI", tag: "tag-green" },
-                    { mod: "grammy",                    role: "Telegram Bot Framework",    note: "Webhook + polling mode", tag: "tag-green" },
-                    { mod: "next.js",                   role: "Landing + Webhook API",     note: "App router, /api/webhook route", tag: "tag-green" },
+                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "8-rule policy, OWS Hackathon 2026" },
+                    { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
+                    { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
+                    { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "40+ chains, OWS partner" },
+                    { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Multi-provider: openrouter | anthropic | openai" },
+                    { mod: "OpenAI Whisper",             role: "Voice Transcription",       note: "Telegram voice note → text, any language" },
+                    { mod: "@xmtp/xmtp-js",             role: "Payment Notifications",     note: "Wallet-native alerts on transfer" },
+                    { mod: "MoonPay",                   role: "USDC On-Ramp",              note: "/fund command, direct into OWS wallet" },
+                    { mod: "viem",                      role: "Base Client",               note: "TX construction, USDC helpers, Uniswap ABI" },
+                    { mod: "grammy",                    role: "Telegram Bot Framework",    note: "Webhook + polling mode" },
+                    { mod: "next.js",                   role: "Landing + Webhook API",     note: "App router, /api/webhook route" },
                   ].map((r) => (
                     <tr key={r.mod}>
                       <td><span className="text-green" style={{ fontSize: 12 }}>{r.mod}</span></td>
@@ -474,12 +471,12 @@ export default function Home() {
               ))}
               <div className="text-cyan text-xs mt-6 mb-4" style={{ letterSpacing: "0.1em" }}>NATURAL LANGUAGE</div>
               {[
-                ['"Send 5 USDC to 0x…"',       "Transfer"],
-                ['"Swap 0.001 ETH to USDC"',   "Swap"],
-                ['"Bridge 10 USDC to Arb"',    "Bridge"],
-                ['"Portföyüm ne durumda?"',     "Portfolio"],
-                ['"Bu hafta ne harcadım?"',     "Spending history"],
-                ["🎙 voice note",               "Whisper → any command"],
+                ['"Send 5 USDC to 0x…"',      "Transfer"],
+                ['"Swap 0.001 ETH to USDC"',  "Swap"],
+                ['"Bridge 10 USDC to Arb"',   "Bridge"],
+                ['"Show my portfolio"',        "Portfolio"],
+                ['"How much did I spend?"',    "Spending history"],
+                ["voice note",                 "Whisper transcribes any language"],
               ].map(([cmd, desc]) => (
                 <div key={cmd} className="flex gap-3 py-1.5" style={{ borderBottom: "1px solid var(--border-dim)", fontSize: 12 }}>
                   <span className="text-yellow" style={{ minWidth: 160, flexShrink: 0 }}>{cmd}</span>
@@ -502,12 +499,12 @@ export default function Home() {
                   <div className="prompt text-green">cd lexon && npm install</div>
                   <div className="prompt text-green">npx tsx setup.ts</div>
                   <div className="text-muted" style={{ fontSize: 11, margin: "8px 0" }}>
-                    ↑ interactive wizard<br />
+                    interactive wizard —<br />
                     configures all keys + limits
                   </div>
                   <div className="prompt text-green">npx tsx dev-bot.ts</div>
                   <div className="text-green" style={{ fontSize: 11, marginTop: 6 }}>
-                    ✓ lexon agent started<br />
+                    [OK] lexon agent started<br />
                     <span className="text-muted">listening for messages...</span>
                     <span className="blink"> █</span>
                   </div>
@@ -551,9 +548,7 @@ export default function Home() {
         <div>
           <span className="text-green">lexon</span> · OWS Hackathon 2026 · Base Mainnet
         </div>
-        <div className="flex gap-6">
-          <span>OWS · Li.Fi · Honcho · Zerion · Claude</span>
-        </div>
+        <div>OWS · Li.Fi · Honcho · Zerion · Claude</div>
         <div>
           <span className="text-green blink">█</span>
           <span style={{ marginLeft: 6 }}>MIT License</span>
