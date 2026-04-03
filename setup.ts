@@ -8,6 +8,15 @@ import * as readline from "readline";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import {
+  createWallet,
+  listWallets,
+  createPolicy,
+  deletePolicy,
+  createApiKey,
+  listApiKeys,
+  revokeApiKey,
+} from "@open-wallet-standard/core";
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
@@ -98,33 +107,124 @@ async function main() {
   info("Sesli komutu kullanmayacaksan Enter'la geç.");
   const openaiKey = await askSecret("OPENAI_API_KEY");
 
-  // ── 4. OWS Wallet ─────────────────────────────────────────────────────────
-  step(4, TOTAL, "OWS Wallet — policy gate oluştur");
-  const walletName = await ask("Cüzdan adı", "lexon-wallet");
+  // ── 4. OWS Wallet + Policy + API Key ─────────────────────────────────────
+  step(4, TOTAL, "OWS Wallet + Policy + API Key");
+  info("OWS policy sadece API key (agent) modunda enforce edilir.");
+  info("Bu adım cüzdanı oluşturur, spend policy'sini kaydeder ve bir API key üretir.");
+  console.log();
 
+  const walletName       = await ask("Cüzdan adı", "lexon-wallet");
+  const walletPassphrase = await askSecret("Cüzdan parolası (yoksa Enter'a bas)");
+
+  // Create wallet (ignore error if already exists)
+  let walletId = "";
   let walletAddress = "";
   try {
-    info(`"${walletName}" cüzdanı oluşturuluyor...`);
-    execSync(`ows wallet create --name ${walletName}`, { stdio: "pipe" });
-    const out = execSync(`ows wallet show --name ${walletName} --json`, { stdio: "pipe" }).toString();
-    walletAddress = JSON.parse(out)?.address ?? "";
-    ok(`Cüzdan oluşturuldu${walletAddress ? `: ${walletAddress}` : ""}`);
-  } catch {
-    warn("OWS CLI bulunamadı veya cüzdan zaten var — devam ediliyor.");
+    let wallet = listWallets().find((w: any) => w.name === walletName);
+    if (!wallet) {
+      info(`"${walletName}" cüzdanı oluşturuluyor...`);
+      wallet = createWallet(walletName, walletPassphrase || undefined);
+    } else {
+      info(`"${walletName}" cüzdanı zaten mevcut, kullanılıyor.`);
+    }
+    walletId = wallet.id;
+    const evm = wallet.accounts?.find((a: any) =>
+      a.chainId === "eip155:8453" || a.chainId?.startsWith("eip155")
+    );
+    walletAddress = evm?.address ?? wallet.accounts?.[0]?.address ?? "";
+    ok(`Cüzdan hazır${walletAddress ? `: ${walletAddress}` : ""}`);
+  } catch (e: any) {
+    warn(`Cüzdan oluşturulamadı: ${e.message} — devam ediliyor.`);
+  }
+
+  // Write policy executable (ensure it's executable)
+  const policyDir = path.join(process.cwd(), "policy");
+  const executablePath = path.join(policyDir, "spend_limit.js");
+  if (!fs.existsSync(executablePath)) {
+    warn("policy/spend_limit.js bulunamadı — önce build yapıldığından emin ol.");
+  } else {
+    try { execSync(`chmod +x "${executablePath}"`); } catch {}
   }
 
   // ── 5. Policy limitleri ───────────────────────────────────────────────────
-  step(5, TOTAL, "OWS Policy kuralları");
-  info("Bunlar OWS policy gate'ine yazılır. Her kural bir güvenlik katmanı ekler.");
+  step(5, TOTAL, "Spend Guard limitleri");
+  info("OWS executable policy (policy/spend_limit.js) şu limitleri enforce eder:");
+  info("  • USDC per-tx cap  → OWS custom executable (ERC-20 data decode)");
+  info("  • ETH per-tx cap   → OWS custom executable (transaction.value)");
+  info("  • Daily ETH cap    → OWS custom executable (spending.daily_total)");
+  info("  • Contract whitelist → OWS custom executable");
+  info("  • USDC daily cap, cooldown → app-layer (OWS daily_total tracks ETH only)");
   console.log();
-  const maxSend    = await ask("Max USDC / işlem (max_value_per_tx)",  "50");
-  const maxDaily   = await ask("Max USDC / gün  (max_value_per_day)",  "100");
-  const maxEth     = await ask("Max ETH / swap",                        "0.01");
-  const maxSwap    = await ask("Max USDC / swap",                       "10");
-  const chains     = await ask("İzin verilen chain ID'leri (allowed_chains)", "eip155:8453");
-  const expiry     = await ask("Policy expiry tarihi (expires_at)",     "2027-01-01T00:00:00Z");
-  const contracts  = await ask("İzin verilen contract adresleri (allowed_contracts, boş=hepsi)", "");
-  const confirmAmt = await ask("Bu USDC'nin üstünde onay iste (require_confirmation, 0=kapalı)", "0");
+  const maxSend    = await ask("Max USDC / işlem",                      "100");
+  const maxDaily   = await ask("Max USDC / gün (app-layer)",            "100");
+  const maxEthTx   = await ask("Max ETH / işlem (OWS enforces)",        "0.05");
+  const maxSwap    = await ask("Max USDC / swap",                       "100");
+  const chains     = await ask("İzin verilen chain ID'leri",            "eip155:8453,eip155:1,eip155:137,eip155:42161,eip155:10");
+  const expiry     = await ask("Policy expiry (expires_at)",            "2027-01-01T00:00:00Z");
+  const contracts  = await ask("Ekstra contract adresleri (boş=sadece DEX'ler)", "");
+  const confirmAmt = await ask("Onay eşiği USDC (0=kapalı)",            "25");
+
+  // Register policy + create API key
+  let owsApiKey = "";
+  if (walletId) {
+    try {
+      const contractsFile = path.join(process.cwd(), "data", "contracts.json");
+
+      // Trusted contracts (hardcoded DEXes)
+      const TRUSTED = [
+        "0x2626664c2603336E57B271c5C0b26F421741e481",
+        "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
+        "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
+        "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+        "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      ];
+
+      const policyJson = JSON.stringify({
+        id: "lexon-policy",
+        name: "Lexon Spend Guard",
+        version: 1,
+        action: "deny",
+        created_at: new Date().toISOString(),
+        rules: [
+          { type: "allowed_chains", chain_ids: chains.split(",").map((s: string) => s.trim()) },
+          { type: "expires_at", timestamp: expiry },
+        ],
+        executable: executablePath,
+        config: {
+          max_usdc_per_tx:    parseFloat(maxSend),
+          max_eth_per_tx_wei: String(Math.floor(parseFloat(maxEthTx) * 1e18)),
+          max_daily_eth_wei:  String(Math.floor(0.1 * 1e18)),
+          trusted_contracts:  TRUSTED,
+          contracts_file:     contractsFile,
+        },
+      });
+
+      // Delete existing policy + re-register
+      try { deletePolicy("lexon-policy"); } catch {}
+      createPolicy(policyJson);
+      ok("OWS policy kaydedildi (lexon-policy)");
+
+      // Revoke existing API key named lexon-agent if any
+      try {
+        const existing = listApiKeys().filter((k: any) => k.name === "lexon-agent");
+        for (const k of existing) { try { revokeApiKey(k.id); } catch {} }
+      } catch {}
+
+      // Create API key scoped to this wallet + policy
+      const keyResult = createApiKey(
+        "lexon-agent",
+        [walletId],
+        ["lexon-policy"],
+        walletPassphrase || "",
+        expiry
+      );
+      owsApiKey = keyResult.token;
+      ok(`OWS API key oluşturuldu: ${owsApiKey.slice(0, 16)}... (gizli, .env.local'a yazılıyor)`);
+    } catch (e: any) {
+      warn(`Policy/API key oluşturulamadı: ${e.message}`);
+      warn("OWS_API_KEY boş kalacak — policy enforce edilmeyecek (owner mode).");
+    }
+  }
 
   // ── 6. AI Model seçimi ────────────────────────────────────────────────────
   step(6, TOTAL, "AI Model seçimi");
@@ -179,7 +279,7 @@ AI_PROVIDER=${aiProvider}
 AI_MODEL=${aiModel}
 ${aiKeyName}=${aiKeyVal}
 
-# OpenAI (Whisper voice transcription — always needed for voice commands)
+# OpenAI (Whisper voice transcription)
 OPENAI_API_KEY=${openaiKey}
 
 # Base Mainnet
@@ -188,23 +288,32 @@ BASE_RPC_URL=https://mainnet.base.org
 # OWS Wallet
 OWS_WALLET_NAME=${walletName}
 
+# OWS API Key — agent mode, policy is enforced before every signing operation.
+# Created by setup.ts via createApiKey(). If empty, owner mode is used (no policy).
+OWS_API_KEY=${owsApiKey}
+
 # XMTP (leave empty to skip recipient notifications)
 XMTP_PRIVATE_KEY=
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# OWS Policy rules
+# Spend limits
+# OWS custom executable enforces: USDC per-tx, ETH per-tx, contract allowlist
+# App-layer enforces: USDC daily cap, tx/day count, cooldown, per-address daily
 MAX_SEND_USDC=${maxSend}
 MAX_DAILY_USDC=${maxDaily}
-MAX_SWAP_ETH=${maxEth}
-MAX_SWAP_USDC=${maxSwap}
+MAX_SWAP_USD=${maxSwap}
+OWS_MAX_ETH_PER_TX=${maxEthTx}
 OWS_ALLOWED_CHAINS=${chains}
 OWS_POLICY_EXPIRY=${expiry}
-${contracts ? `OWS_ALLOWED_CONTRACTS=${contracts}` : "# OWS_ALLOWED_CONTRACTS=0x...,0x...  (empty = all contracts allowed)"}
+${contracts ? `OWS_ALLOWED_CONTRACTS=${contracts}` : "# OWS_ALLOWED_CONTRACTS=0x...,0x...  (comma-separated extras; Uniswap/Aerodrome/Li.Fi already trusted)"}
 OWS_CONFIRM_ABOVE_USDC=${confirmAmt}
+OWS_MAX_TX_PER_DAY=20
+OWS_COOLDOWN_SECONDS=30
+OWS_MAX_PER_ADDRESS_DAILY=50
 
-# MoonPay (on-ramp + cross-chain bridge)
+# MoonPay (on-ramp)
 MOONPAY_API_KEY=${moonpayApiKey}
 MOONPAY_WALLET_NAME=${walletName}
 

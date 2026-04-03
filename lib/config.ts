@@ -7,6 +7,10 @@ export const config = {
   walletName: process.env.OWS_WALLET_NAME || "lexon-wallet",
   rpcUrl: process.env.BASE_RPC_URL || "https://mainnet.base.org",
 
+  // OWS API key — created via setup.ts (ows key create).
+  // Agent mode: policy IS enforced. Owner mode (empty): policy is NOT enforced.
+  owsApiKey: process.env.OWS_API_KEY || "",
+
   // OWS policy rules — chains
   // OWS uses eip155:<chainId> format. Add chains where OWS will sign txs.
   allowedChainIds: (process.env.OWS_ALLOWED_CHAINS ||
@@ -55,7 +59,12 @@ export const config = {
   // Require confirmation above this USDC amount (0 = never)
   confirmAboveUSDC: parseFloat(process.env.OWS_CONFIRM_ABOVE_USDC || "0"),
 
-  // Spend limits (app-layer, enforced before OWS signing)
+  // Spend limits
+  // maxEthPerTx: enforced by OWS custom executable (policy/spend_limit.js)
+  // maxSendUSDC: enforced by OWS custom executable
+  // maxDailyUSDC, maxTxPerDay, cooldownSeconds, maxPerAddressDaily: app-layer
+  //   (OWS daily_total tracks ETH value only, not ERC-20 amounts)
+  maxEthPerTx: parseFloat(process.env.OWS_MAX_ETH_PER_TX || "0.05"),
   maxSendUSDC: parseFloat(process.env.MAX_SEND_USDC || "100"),
   maxDailyUSDC: parseFloat(process.env.MAX_DAILY_USDC || "100"),
   maxSwapUSD: parseFloat(process.env.MAX_SWAP_USD || "100"),   // applies to both ETH & USDC swaps

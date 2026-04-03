@@ -81,7 +81,7 @@ export default function Home() {
               style={{ borderTop: "1px solid var(--border-dim)" }}>
               {[
                 { val: "17+", label: "bridge chains" },
-                { val: "8",   label: "spend guards" },
+                { val: "2+1", label: "OWS policy layers" },
                 { val: "3",   label: "AI providers" },
                 { val: "∞",   label: "self-hosted" },
               ].map((s) => (
@@ -173,7 +173,7 @@ export default function Home() {
           {[
             { n: "01", title: "Text or voice",       desc: "Send a Telegram message or voice note in any language — Whisper handles the rest." },
             { n: "02", title: "AI parses intent",    desc: "Claude (OpenRouter / Anthropic / OpenAI) extracts the action from natural language." },
-            { n: "03", title: "Guards check before signing", desc: "OWS enforces chain allowlist + expiry. App-layer guards check per-tx limit, daily cap, cooldown, and contract whitelist." },
+            { n: "03", title: "OWS policy gates signing", desc: "Declarative rules check chain + expiry. Custom executable checks USDC amount, ETH value, and contract allowlist — key material never touched if denied." },
             { n: "04", title: "On-chain, done",      desc: "Transaction broadcast to Base. Basescan link returned instantly." },
           ].map((s) => (
             <div key={s.n} className="term-card">
@@ -233,9 +233,9 @@ export default function Home() {
               },
               {
                 tag: "security", tagColor: "tag-yellow",
-                title: "Spend Guards + OWS Policy",
+                title: "OWS Policy Engine",
                 cmd: "/policy",
-                desc: "OWS natively enforces chain allowlist + expiry. Per-tx, daily cap, cooldown, and contract whitelist are app-layer guards — all configurable via .env.",
+                desc: "Declarative rules (chain, expiry) + custom executable (USDC cap, ETH cap, contract allowlist). Agent-mode API key required — policy bypassed in owner mode.",
               },
               {
                 tag: "notify", tagColor: "tag-cyan",
@@ -303,17 +303,12 @@ export default function Home() {
               <div style={{ paddingLeft: 16 }}>
                 <div><span className="text-cyan">&quot;id&quot;</span>: <span className="text-yellow">&quot;lexon-policy&quot;</span>,</div>
                 <div><span className="text-cyan">&quot;action&quot;</span>: <span className="text-yellow">&quot;deny&quot;</span>,</div>
+                <div style={{ marginTop: 6 }}><span className="text-muted">// declarative rules — evaluated in-process</span></div>
                 <div><span className="text-cyan">&quot;rules&quot;</span>: [</div>
                 <div style={{ paddingLeft: 16 }}>
                   {[
-                    ["allowed_chains",        "eip155:8453 + 12 more"],
-                    ["max_value_per_tx",      "USDC $100   <- MAX_SEND_USDC"],
-                    ["max_value_per_day",     "USDC $100   <- MAX_DAILY_USDC"],
-                    ["max_tx_per_day",        "20          <- OWS_MAX_TX_PER_DAY"],
-                    ["cooldown",              "30s         <- OWS_COOLDOWN_SECONDS"],
-                    ["max_per_address_day",   "USDC $50    <- OWS_MAX_PER_ADDRESS_DAILY"],
-                    ["allowed_contracts",     "Uniswap · Aerodrome · Li.Fi + more"],
-                    ["require_confirmation",  "above $25   <- OWS_CONFIRM_ABOVE_USDC"],
+                    ["allowed_chains", "eip155:8453 + 12 more  <- OWS native"],
+                    ["expires_at",     "2027-01-01              <- OWS native"],
                   ].map(([rule, val]) => (
                     <div key={rule} style={{ marginBottom: 2 }}>
                       <span className="text-green">&quot;{rule}&quot;</span>
@@ -322,25 +317,58 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div>]</div>
+                <div>],</div>
+                <div style={{ marginTop: 6 }}><span className="text-muted">// custom executable — runs after declarative rules pass</span></div>
+                <div><span className="text-cyan">&quot;executable&quot;</span>: <span className="text-yellow">&quot;policy/spend_limit.js&quot;</span>,</div>
+                <div><span className="text-cyan">&quot;config&quot;</span>: {"{"}</div>
+                <div style={{ paddingLeft: 16 }}>
+                  {[
+                    ["max_usdc_per_tx",    "$100  ERC-20 data decoded"],
+                    ["max_eth_per_tx_wei", "0.05 ETH  transaction.value"],
+                    ["max_daily_eth_wei",  "0.1 ETH   spending.daily_total"],
+                    ["trusted_contracts",  "Uniswap · Aerodrome · Li.Fi"],
+                    ["contracts_file",     "data/contracts.json  (live read)"],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ marginBottom: 2 }}>
+                      <span className="text-green">&quot;{k}&quot;</span>
+                      <span className="text-muted"> → </span>
+                      <span style={{ color: "var(--text)", opacity: 0.8 }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div>{"}"}</div>
               </div>
               <div className="text-muted">{"}"}</div>
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div className="text-muted text-xs mb-2" style={{ letterSpacing: "0.08em" }}>APP-LAYER SPEND GUARDS — ALL CONFIGURABLE VIA .env.local</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="text-muted text-xs mb-1" style={{ letterSpacing: "0.08em" }}>OWS ENFORCES VIA EXECUTABLE</div>
             {[
-              { env: "MAX_SEND_USDC",             default: "100", desc: "Max USDC per transaction" },
-              { env: "MAX_DAILY_USDC",            default: "100", desc: "Daily USDC spending cap" },
-              { env: "MAX_SWAP_USD",              default: "100", desc: "Max swap value (ETH or USDC, live price)" },
+              { env: "MAX_SEND_USDC",     default: "100",  desc: "USDC per-tx cap (ERC-20 data decoded)", tag: "OWS" },
+              { env: "OWS_MAX_ETH_PER_TX",default: "0.05", desc: "ETH per-tx cap (transaction.value wei)", tag: "OWS" },
+              { env: "OWS_ALLOWED_CHAINS",default: "13",   desc: "Chain allowlist (declarative rule)", tag: "OWS" },
+            ].map((r) => (
+              <div key={r.env} className="term-card" style={{ padding: "9px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span className="text-cyan" style={{ fontSize: 11, fontWeight: 700 }}>{r.env}</span>
+                    <span className="tag tag-green" style={{ fontSize: 9 }}>{r.tag}</span>
+                  </div>
+                  <div className="text-muted" style={{ fontSize: 11 }}>{r.desc}</div>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--green)", fontWeight: 700 }}>{r.default}</div>
+              </div>
+            ))}
+            <div className="text-muted text-xs mt-2 mb-1" style={{ letterSpacing: "0.08em" }}>APP-LAYER GUARDS (OWS daily_total tracks ETH only, not ERC-20)</div>
+            {[
+              { env: "MAX_DAILY_USDC",            default: "100", desc: "USDC daily cap" },
               { env: "OWS_MAX_TX_PER_DAY",        default: "20",  desc: "Transaction count limit" },
               { env: "OWS_COOLDOWN_SECONDS",      default: "30",  desc: "Seconds between transactions" },
               { env: "OWS_MAX_PER_ADDRESS_DAILY", default: "50",  desc: "Max per recipient per day" },
-              { env: "OWS_CONFIRM_ABOVE_USDC",    default: "25",  desc: "Ask confirmation above this amount" },
-              { env: "OWS_ALLOWED_CHAINS",        default: "13",  desc: "Comma-separated eip155 chain IDs" },
+              { env: "OWS_CONFIRM_ABOVE_USDC",    default: "25",  desc: "Confirmation threshold" },
             ].map((r) => (
-              <div key={r.env} className="term-card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={r.env} className="term-card" style={{ padding: "9px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <div className="text-cyan" style={{ fontSize: 11, fontWeight: 700 }}>{r.env}</div>
                   <div className="text-muted" style={{ fontSize: 11 }}>{r.desc}</div>
