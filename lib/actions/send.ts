@@ -8,6 +8,7 @@ import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { notifyRecipient } from "../xmtp";
 import { isAllowed } from "../allowlist";
 import { isAddress, parseUnits, encodeFunctionData, serializeTransaction } from "viem";
+import { config } from "../config";
 
 export async function sendUSDC(to: string, amount: string): Promise<string> {
   if (!isAddress(to)) {
@@ -18,8 +19,8 @@ export async function sendUSDC(to: string, amount: string): Promise<string> {
   if (isNaN(amountNum) || amountNum <= 0) {
     return `❌ Geçersiz miktar: ${amount}`;
   }
-  if (amountNum > 2) {
-    return `❌ Güvenlik limiti: tek işlemde max $2 USDC gönderilebilir.`;
+  if (amountNum > config.maxSendUSDC) {
+    return `❌ Limit aşıldı: tek işlemde max $${config.maxSendUSDC} USDC gönderilebilir.`;
   }
 
   if (!isAllowed(to)) {

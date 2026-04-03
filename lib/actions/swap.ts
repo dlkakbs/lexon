@@ -5,6 +5,8 @@ import {
 } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { encodeFunctionData, parseEther, parseUnits, formatUnits, serializeTransaction } from "viem";
+import { config } from "../config";
+import { getETHPriceUSD } from "../skills/price";
 
 // DEX Routers on Base mainnet
 export const ROUTERS = {
@@ -60,9 +62,14 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
     return `❌ Invalid amount: ${ethAmount}`;
   }
 
-  // Safety limit: max $20 worth (~0.007 ETH at ~$2800)
-  if (ethNum > 0.01) {
-    return `❌ Safety limit: max 0.01 ETH per swap.`;
+  // USD bazlı limit: anlık ETH fiyatından hesapla
+  const ethPrice = await getETHPriceUSD();
+  if (ethPrice > 0) {
+    const usdValue = ethNum * ethPrice;
+    if (usdValue > config.maxSwapUSD) {
+      const maxEthEquiv = (config.maxSwapUSD / ethPrice).toFixed(6);
+      return `❌ Limit aşıldı: max $${config.maxSwapUSD} (~${maxEthEquiv} ETH @ $${ethPrice.toFixed(0)}) swap edilebilir.`;
+    }
   }
 
   try {
@@ -126,8 +133,8 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
   if (isNaN(usdcNum) || usdcNum <= 0) {
     return `❌ Invalid amount: ${usdcAmount}`;
   }
-  if (usdcNum > 10) {
-    return `❌ Safety limit: max $10 USDC per swap.`;
+  if (usdcNum > config.maxSwapUSD) {
+    return `❌ Limit aşıldı: max $${config.maxSwapUSD} USDC per swap.`;
   }
 
   try {
