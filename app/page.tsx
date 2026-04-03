@@ -81,7 +81,7 @@ export default function Home() {
               style={{ borderTop: "1px solid var(--border-dim)" }}>
               {[
                 { val: "17+", label: "bridge chains" },
-                { val: "8",   label: "policy rules" },
+                { val: "8",   label: "spend guards" },
                 { val: "3",   label: "AI providers" },
                 { val: "∞",   label: "self-hosted" },
               ].map((s) => (
@@ -116,8 +116,8 @@ export default function Home() {
                     <span className="text-yellow">Li.Fi route found</span><br />
                     Base → Arbitrum · 10 USDC<br />
                     fee: ~$0.12 · est. 45s<br /><br />
-                    <span className="text-muted">OWS policy: chain allowed</span><br />
-                    <span className="text-muted">OWS policy: under daily limit</span>
+                    <span className="text-muted">OWS: chain allowed + expiry ok</span><br />
+                    <span className="text-muted">spend guard: under daily limit</span>
                   </span>
                 </div>
                 <div>
@@ -173,7 +173,7 @@ export default function Home() {
           {[
             { n: "01", title: "Text or voice",       desc: "Send a Telegram message or voice note in any language — Whisper handles the rest." },
             { n: "02", title: "AI parses intent",    desc: "Claude (OpenRouter / Anthropic / OpenAI) extracts the action from natural language." },
-            { n: "03", title: "OWS enforces policy", desc: "8 configurable rules — per-tx limit, daily cap, cooldown, contract whitelist — check before signing." },
+            { n: "03", title: "Guards check before signing", desc: "OWS enforces chain allowlist + expiry. App-layer guards check per-tx limit, daily cap, cooldown, and contract whitelist." },
             { n: "04", title: "On-chain, done",      desc: "Transaction broadcast to Base. Basescan link returned instantly." },
           ].map((s) => (
             <div key={s.n} className="term-card">
@@ -233,9 +233,9 @@ export default function Home() {
               },
               {
                 tag: "security", tagColor: "tag-yellow",
-                title: "OWS Policy (8 rules)",
+                title: "Spend Guards + OWS Policy",
                 cmd: "/policy",
-                desc: "Per-tx, daily cap, cooldown, contract whitelist — all configurable via .env. Zero hardcoded limits.",
+                desc: "OWS natively enforces chain allowlist + expiry. Per-tx, daily cap, cooldown, and contract whitelist are app-layer guards — all configurable via .env.",
               },
               {
                 tag: "notify", tagColor: "tag-cyan",
@@ -329,7 +329,7 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div className="text-muted text-xs mb-2" style={{ letterSpacing: "0.08em" }}>ALL RULES COME FROM .env.local — ZERO HARDCODED LIMITS</div>
+            <div className="text-muted text-xs mb-2" style={{ letterSpacing: "0.08em" }}>APP-LAYER SPEND GUARDS — ALL CONFIGURABLE VIA .env.local</div>
             {[
               { env: "MAX_SEND_USDC",             default: "100", desc: "Max USDC per transaction" },
               { env: "MAX_DAILY_USDC",            default: "100", desc: "Daily USDC spending cap" },
@@ -378,7 +378,7 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {[
-                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "8-rule policy, OWS Hackathon 2026" },
+                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "native: chain allowlist + expiry; app-layer: spend guards" },
                     { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
                     { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
                     { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
