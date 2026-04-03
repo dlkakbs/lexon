@@ -5,6 +5,7 @@ import { sendUSDC } from "./actions/send";
 import { checkBalance } from "./actions/balance";
 import { getWalletAddress } from "./wallet";
 import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./allowlist";
+import { swapETHtoUSDC, swapUSDCtoETH } from "./actions/swap";
 
 const HELP_TEXT = `
 🔷 *Lexon* — DeFi on Base via natural language
@@ -64,7 +65,7 @@ function registerHandlers(bot: Bot, token: string) {
 
   // /allow 0x123... MyFriend
   bot.command("allow", async (ctx) => {
-    const parts = ctx.message.text.split(" ").slice(1);
+    const parts = (ctx.message?.text ?? "").split(" ").slice(1);
     const address = parts[0];
     const label = parts.slice(1).join(" ") || "Personal";
 
@@ -82,7 +83,7 @@ function registerHandlers(bot: Bot, token: string) {
 
   // /remove 0x123...
   bot.command("remove", async (ctx) => {
-    const address = ctx.message.text.split(" ")[1];
+    const address = (ctx.message?.text ?? "").split(" ")[1];
     if (!address || !address.startsWith("0x")) {
       await ctx.reply("Usage: `/remove 0x...`", { parse_mode: "Markdown" });
       return;
@@ -156,6 +157,22 @@ async function handleCommand(ctx: Context, override?: string) {
     }
     case "help": {
       await ctx.reply(HELP_TEXT, { parse_mode: "Markdown" });
+      break;
+    }
+    case "swap_eth_usdc": {
+      const msg = await ctx.reply("⏳ Swapping ETH → USDC...");
+      const result = await swapETHtoUSDC(action.amount);
+      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, result, {
+        parse_mode: "Markdown",
+      });
+      break;
+    }
+    case "swap_usdc_eth": {
+      const msg = await ctx.reply("⏳ Swapping USDC → ETH...");
+      const result = await swapUSDCtoETH(action.amount);
+      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, result, {
+        parse_mode: "Markdown",
+      });
       break;
     }
     case "unknown": {

@@ -1,6 +1,8 @@
 export type Action =
   | { type: "send"; to: string; amount: string }
   | { type: "balance"; address?: string }
+  | { type: "swap_eth_usdc"; amount: string }
+  | { type: "swap_usdc_eth"; amount: string }
   | { type: "help" }
   | { type: "unknown"; message: string };
 
@@ -11,22 +13,28 @@ Extract the user's intent and return ONLY valid JSON matching one of these schem
 1. Send USDC:
 {"type":"send","to":"0x...","amount":"5.00"}
 
-2. Check balance (own wallet or specific address):
-{"type":"balance","address":"0x..."}
-or {"type":"balance"} for own wallet
+2. Check balance:
+{"type":"balance","address":"0x..."} or {"type":"balance"} for own wallet
 
-3. Help:
+3. Swap ETH → USDC:
+{"type":"swap_eth_usdc","amount":"0.001"}
+
+4. Swap USDC → ETH:
+{"type":"swap_usdc_eth","amount":"3.00"}
+
+5. Help:
 {"type":"help"}
 
-4. Unknown:
-{"type":"unknown","message":"Explain what you can't understand in Turkish"}
+6. Unknown:
+{"type":"unknown","message":"Explain what you can't understand in English"}
 
 Rules:
-- "amount" must be a string with max 2 decimal places
+- "amount" must be a string with max 6 decimal places
 - "to" must be a valid 0x Ethereum address
-- If user says "cüzdanım", "bakiyem", "balance" with no address → use {"type":"balance"}
-- Respond ONLY with the JSON object, no other text
-- If unsure, use "unknown" with a helpful Turkish explanation`;
+- Swap triggers: "swap", "exchange", "convert", "buy ETH", "buy USDC"
+- If user says "swap 3 USDC to ETH" → swap_usdc_eth with amount "3"
+- If user says "swap 0.001 ETH to USDC" or "buy USDC with ETH" → swap_eth_usdc
+- Respond ONLY with the JSON object, no other text`;
 
 export async function parseIntent(text: string): Promise<Action> {
   try {
