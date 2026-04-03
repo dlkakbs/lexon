@@ -38,15 +38,20 @@ XMTP notification sent to recipient
 
 ## Stack
 
-- **[OWS](https://docs.openwallet.sh/)** — Wallet management, policy enforcement, signing
-- **[Base](https://base.org/)** — L2 network, native USDC
-- **[Claude](https://anthropic.com/)** via OpenRouter — Natural language intent parsing
-- **[Whisper](https://openai.com/research/whisper)** — Voice-to-text transcription
-- **[XMTP](https://xmtp.org/)** — Wallet-to-wallet payment notifications
-- **[MoonPay](https://www.moonpay.com/)** — USDC on-ramp
-- **[viem](https://viem.sh/)** — Base transaction construction
-- **[grammy](https://grammy.dev/)** — Telegram bot framework
-- **[Next.js 16](https://nextjs.org/)** — Landing page + webhook API
+| Tool | Role |
+|---|---|
+| **[OWS](https://docs.openwallet.sh/)** | Wallet management, policy-gated signing, API keys |
+| **[Base](https://base.org/)** | L2 network — native USDC gas, fast finality |
+| **[Claude](https://openrouter.ai/)** via OpenRouter | Parses "send 2 USDC to 0x..." into structured actions |
+| **[Whisper](https://openai.com/research/whisper)** | Transcribes Telegram voice notes to text |
+| **[XMTP](https://xmtp.org/)** | Sends wallet-native payment notifications to recipients — when you send USDC, the recipient's wallet address gets a message: "You received $2 USDC" (visible in Coinbase Wallet, Converse, etc.) |
+| **[MoonPay](https://www.moonpay.com/)** | USDC on-ramp via `/fund` — buy USDC directly into the Lexon wallet |
+| **[Uniswap V3](https://uniswap.org/)** | ETH ↔ USDC swaps on Base (SwapRouter02) |
+| **[Uniswap Universal Router](https://uniswap.org/)** | Multi-hop swap routing |
+| **[Aerodrome](https://aerodrome.finance/)** | Base-native DEX, alternative swap routing |
+| **[viem](https://viem.sh/)** | Base transaction construction and broadcasting |
+| **[grammy](https://grammy.dev/)** | Telegram bot framework |
+| **[Next.js](https://nextjs.org/)** | Landing page + Telegram webhook API route |
 
 ---
 
@@ -107,12 +112,25 @@ https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-app.vercel.app/a
 
 | Command | Description |
 |---|---|
-| `/start` | Introduction |
-| `/help` | Command reference |
-| `/wallet` | Show Lexon wallet address |
-| `/list` | Show all allowed addresses |
-| `/allow 0x... Label` | Add address to allowlist |
-| `/remove 0x...` | Remove address from allowlist |
+| `/start` | Introduction and onboarding |
+| `/help` | Full command reference |
+| `/wallet` | Show Lexon wallet address + Basescan link |
+| `/fund` | Get MoonPay link to buy USDC directly into wallet |
+| `/list` | Show all allowed addresses (trusted DEXes + personal) |
+| `/allow 0x... Label` | Add an address to the allowlist |
+| `/remove 0x...` | Remove an address from the allowlist |
+
+### Natural Language Commands
+
+| Say... | Action |
+|---|---|
+| `"Send 2 USDC to 0x742d..."` | USDC transfer |
+| `"What's my balance?"` | Check wallet balance |
+| `"Check balance of 0x..."` | Check any address |
+| `"Swap 0.001 ETH to USDC"` | ETH → USDC via Uniswap V3 |
+| `"Swap 3 USDC to ETH on Aerodrome"` | USDC → ETH via Aerodrome |
+| `"Swap ETH to USDC via Uniswap Universal"` | Multi-hop swap |
+| 🎙 Voice note of any of the above | Whisper transcribes + executes |
 
 ---
 
