@@ -141,13 +141,13 @@ async function handle(ctx: any, action: any) {
       break;
     case "swap_eth_usdc": {
       const msg = await ctx.reply("⏳ Swapping ETH → USDC...");
-      const result = await swapETHtoUSDC(action.amount);
+      const result = await swapETHtoUSDC(action.amount, action.dex);
       await ctx.api.editMessageText(ctx.chat.id, msg.message_id, result, { parse_mode: "Markdown" });
       break;
     }
     case "swap_usdc_eth": {
       const msg = await ctx.reply("⏳ Swapping USDC → ETH...");
-      const result = await swapUSDCtoETH(action.amount);
+      const result = await swapUSDCtoETH(action.amount, action.dex);
       await ctx.api.editMessageText(ctx.chat.id, msg.message_id, result, { parse_mode: "Markdown" });
       break;
     }

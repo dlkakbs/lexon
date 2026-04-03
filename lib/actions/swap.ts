@@ -6,10 +6,17 @@ import {
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { encodeFunctionData, parseEther, parseUnits, formatUnits, serializeTransaction } from "viem";
 
-// Uniswap V3 SwapRouter02 on Base
-const SWAP_ROUTER = "0x2626664c2603336E57B271c5C0b26F421741e481" as const;
-const WETH_ADDRESS = "0x4200000000000000000000000000000000000006" as const; // WETH on Base
-const POOL_FEE = 500; // 0.05% — ETH/USDC pool fee tier on Base
+// DEX Routers on Base mainnet
+export const ROUTERS = {
+  uniswap_v3:  "0x2626664c2603336E57B271c5C0b26F421741e481" as const, // SwapRouter02
+  uniswap_universal: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD" as const, // UniversalRouter
+  aerodrome:   "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43" as const,
+} as const;
+
+// Default: Uniswap V3 (deepest ETH/USDC liquidity on Base)
+const SWAP_ROUTER = ROUTERS.uniswap_v3;
+const WETH_ADDRESS = "0x4200000000000000000000000000000000000006" as const;
+const POOL_FEE = 500; // 0.05% — best fee tier for ETH/USDC on Base
 
 const SWAP_ROUTER_ABI = [
   {
@@ -35,7 +42,19 @@ const SWAP_ROUTER_ABI = [
   },
 ] as const;
 
-export async function swapETHtoUSDC(ethAmount: string): Promise<string> {
+function getRouter(dex?: string): `0x${string}` {
+  if (dex === "aerodrome") return ROUTERS.aerodrome;
+  if (dex === "uniswap_universal") return ROUTERS.uniswap_universal;
+  return ROUTERS.uniswap_v3;
+}
+
+function dexLabel(dex?: string): string {
+  if (dex === "aerodrome") return "Aerodrome";
+  if (dex === "uniswap_universal") return "Uniswap Universal";
+  return "Uniswap V3";
+}
+
+export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<string> {
   const ethNum = parseFloat(ethAmount);
   if (isNaN(ethNum) || ethNum <= 0) {
     return `❌ Invalid amount: ${ethAmount}`;
@@ -49,8 +68,8 @@ export async function swapETHtoUSDC(ethAmount: string): Promise<string> {
   try {
     const from = getWalletAddress() as `0x${string}`;
     const amountIn = parseEther(ethAmount);
+    const router = getRouter(dex);
 
-    // 2% slippage tolerance — amountOutMinimum = 0 for simplicity (hackathon demo)
     const data = encodeFunctionData({
       abi: SWAP_ROUTER_ABI,
       functionName: "exactInputSingle",
@@ -74,14 +93,14 @@ export async function swapETHtoUSDC(ethAmount: string): Promise<string> {
 
     const gasEstimate = await publicClient.estimateGas({
       account: from,
-      to: SWAP_ROUTER,
+      to: router,
       data,
       value: amountIn,
     });
 
     const txHex = serializeTransaction({
       chainId: 8453,
-      to: SWAP_ROUTER,
+      to: router,
       data,
       nonce,
       gasPrice,
@@ -94,7 +113,7 @@ export async function swapETHtoUSDC(ethAmount: string): Promise<string> {
 
     return (
       `✅ *Swap complete!*\n\n` +
-      `📤 ${ethAmount} ETH → USDC\n\n` +
+      `📤 ${ethAmount} ETH → USDC via ${dexLabel(dex)}\n\n` +
       `🔗 [View on Basescan](https://basescan.org/tx/${txHash})`
     );
   } catch (err: any) {
@@ -102,7 +121,7 @@ export async function swapETHtoUSDC(ethAmount: string): Promise<string> {
   }
 }
 
-export async function swapUSDCtoETH(usdcAmount: string): Promise<string> {
+export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<string> {
   const usdcNum = parseFloat(usdcAmount);
   if (isNaN(usdcNum) || usdcNum <= 0) {
     return `❌ Invalid amount: ${usdcAmount}`;
@@ -176,15 +195,17 @@ export async function swapUSDCtoETH(usdcAmount: string): Promise<string> {
       ],
     });
 
+    const router = getRouter(dex);
+
     const swapGas = await publicClient.estimateGas({
       account: from,
-      to: SWAP_ROUTER,
+      to: router,
       data: swapData,
     });
 
     const swapTx = serializeTransaction({
       chainId: 8453,
-      to: SWAP_ROUTER,
+      to: router,
       data: swapData,
       nonce: nonce + 1,
       gasPrice,
@@ -197,7 +218,7 @@ export async function swapUSDCtoETH(usdcAmount: string): Promise<string> {
 
     return (
       `✅ *Swap complete!*\n\n` +
-      `📤 $${usdcAmount} USDC → ETH\n\n` +
+      `📤 $${usdcAmount} USDC → ETH via ${dexLabel(dex)}\n\n` +
       `🔗 [View on Basescan](https://basescan.org/tx/${swapTxHash})`
     );
   } catch (err: any) {

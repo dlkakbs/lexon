@@ -1,8 +1,8 @@
 export type Action =
   | { type: "send"; to: string; amount: string }
   | { type: "balance"; address?: string }
-  | { type: "swap_eth_usdc"; amount: string }
-  | { type: "swap_usdc_eth"; amount: string }
+  | { type: "swap_eth_usdc"; amount: string; dex?: string }
+  | { type: "swap_usdc_eth"; amount: string; dex?: string }
   | { type: "help" }
   | { type: "unknown"; message: string };
 
@@ -17,10 +17,13 @@ Extract the user's intent and return ONLY valid JSON matching one of these schem
 {"type":"balance","address":"0x..."} or {"type":"balance"} for own wallet
 
 3. Swap ETH → USDC:
-{"type":"swap_eth_usdc","amount":"0.001"}
+{"type":"swap_eth_usdc","amount":"0.001","dex":"uniswap_v3"}
 
 4. Swap USDC → ETH:
-{"type":"swap_usdc_eth","amount":"3.00"}
+{"type":"swap_usdc_eth","amount":"3.00","dex":"aerodrome"}
+
+Supported dex values: "uniswap_v3" (default), "uniswap_universal", "aerodrome"
+If user doesn't specify a DEX, use "uniswap_v3" as default.
 
 5. Help:
 {"type":"help"}
