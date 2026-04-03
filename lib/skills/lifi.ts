@@ -8,6 +8,7 @@
 import { encodeFunctionData, parseUnits, serializeTransaction } from "viem";
 import { publicClient } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
+import { approveContract, isApprovedContract } from "../contracts";
 import { config } from "../config";
 
 const LIFI_API = "https://li.quest/v1";
@@ -192,6 +193,13 @@ export async function bridge(
     }
 
     // 3. Bridge tx'i OWS ile imzala
+    // Li.Fi farklı route'larda farklı contract adresleri döndürebilir.
+    // OWS executable contract allowlist'i kontrol ettiğinden, Li.Fi'den dönen
+    // to adresini dinamik olarak data/contracts.json'a ekle.
+    if (txReq.to && !isApprovedContract(txReq.to)) {
+      approveContract(txReq.to, `Li.Fi route (${bridge})`);
+    }
+
     const nonce = await publicClient.getTransactionCount({ address: fromAddress });
     const txHex = serializeTransaction({
       chainId:  fromChainId,
