@@ -1,58 +1,16 @@
 import { Bot, Context, webhookCallback } from "grammy";
 import { config } from "./config";
-import { generateChatReply, parseIntent, type Action } from "./intent";
 import { transcribeVoice } from "./voice";
-import { sendUSDC } from "./actions/send";
-import { checkBalance } from "./actions/balance";
 import { getWalletAddress } from "./wallet";
 import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./allowlist";
-import { approveContract, unapproveContract, getAllContracts, getUserContracts, TRUSTED_CONTRACTS } from "./contracts";
-import { swapETHtoUSDC, swapUSDCtoETH } from "./actions/swap";
+import { approveContract, unapproveContract, getUserContracts, TRUSTED_CONTRACTS } from "./contracts";
 import { getETHPrice } from "./skills/price";
 import { getPortfolio, getPositions, getTransactionHistory, getChainBalance } from "./skills/zerion";
-import { bridge } from "./skills/lifi";
-import { searchToken } from "./skills/moonpay";
 import { getWalletPatterns, scoreWallet } from "./skills/allium";
-import { extractTxHash, formatPolicyTraceSummary, logPolicyTrace } from "./policy-trace";
+import { formatPolicyTraceSummary } from "./policy-trace";
 import { buyMarketResearch } from "./x402/research-client";
-import {
-  enforceTransactionGuards,
-  getGuardUsageSummary,
-  recordSuccessfulTransaction,
-  requireHighValueConfirmation,
-} from "./guards";
-import {
-  logInteraction,
-  getUserContext,
-  getSpendingSummary,
-  resolveNameToAddress,
-  isKnownAddress,
-  queryMemory,
-} from "./memory";
-
-function isSuccessfulResponse(response: string): boolean {
-  return response.startsWith("✅");
-}
-
-function describeRequestedAction(
-  kind: "send" | "swap" | "bridge",
-  details: Record<string, string | number | undefined>
-): string {
-  if (kind === "send") {
-    return `send ${details.amount ?? "?"} USDC to ${details.to ?? "recipient"}`;
-  }
-  if (kind === "swap") {
-    return `swap ${details.amount ?? "?"} ${details.fromToken ?? "asset"} to ${details.toToken ?? "asset"}`;
-  }
-  return `bridge ${details.amount ?? "?"} ${details.fromToken ?? "asset"} from ${details.fromChain ?? "base"} to ${details.toChain ?? "destination"}`;
-}
-
-function describeExecutedAction(
-  kind: "send" | "swap" | "bridge",
-  details: Record<string, string | number | undefined>
-): string {
-  return describeRequestedAction(kind, details);
-}
+import { handleLexonMessage, type LexonMessageHandle } from "./runtime";
+import { getUserContext, queryMemory } from "./memory";
 
 async function resolveTargetAddress(ctx: Context, explicit?: string) {
   if (explicit?.match(/^0x[a-fA-F0-9]{40}$/)) return explicit;
@@ -65,18 +23,18 @@ async function resolveTargetAddress(ctx: Context, explicit?: string) {
 }
 
 function hasOwnerConfig(): boolean {
-  return config.telegramOwnerIds.length > 0;
+  return config.ownerIds.length > 0;
 }
 
 function isOwner(ctx: Context): boolean {
   const userId = ctx.from?.id;
-  return Boolean(userId && config.telegramOwnerIds.includes(String(userId)));
+  return Boolean(userId && config.ownerIds.includes(String(userId)));
 }
 
 async function requireOwner(ctx: Context, capability: string): Promise<boolean> {
   if (!hasOwnerConfig()) {
     await ctx.reply(
-      `🔒 \`${capability}\` için owner yetkisi gerekli.\n\nÖnce \`TELEGRAM_OWNER_IDS\` ayarlamalısın.`,
+      `🔒 \`${capability}\` için owner yetkisi gerekli.\n\nÖnce \`LEXON_OWNER_IDS\` ayarlamalısın.`,
       { parse_mode: "Markdown" }
     );
     return false;
@@ -91,6 +49,34 @@ async function requireOwner(ctx: Context, capability: string): Promise<boolean> 
   }
 
   return true;
+}
+
+function createTelegramSession(ctx: Context) {
+  return {
+    transport: "telegram" as const,
+    actorId: ctx.from?.id ? String(ctx.from.id) : undefined,
+    conversationId: ctx.chat?.id ? String(ctx.chat.id) : undefined,
+    reply: async (text: string, options?: { markdown?: boolean }): Promise<LexonMessageHandle | null> => {
+      const raw = await ctx.reply(text, options?.markdown ? { parse_mode: "Markdown" } : undefined);
+      return { raw };
+    },
+    edit: async (message: LexonMessageHandle, text: string, options?: { markdown?: boolean }) => {
+      const sent = message.raw as { message_id: number } | null;
+      if (!sent?.message_id || !ctx.chat?.id) {
+        await ctx.reply(text, options?.markdown ? { parse_mode: "Markdown" } : undefined);
+        return;
+      }
+      await ctx.api.editMessageText(
+        ctx.chat.id,
+        sent.message_id,
+        text,
+        options?.markdown ? { parse_mode: "Markdown" } : undefined
+      );
+    },
+    typing: async () => {
+      await ctx.replyWithChatAction("typing");
+    },
+  };
 }
 
 const HELP_TEXT = `
@@ -533,7 +519,7 @@ export function registerHandlers(bot: Bot, token: string) {
       return;
     }
     await ctx.replyWithChatAction("typing");
-    await handleCommand(ctx);
+    await handleLexonMessage(createTelegramSession(ctx), text);
   });
 
   bot.on("message:voice", async (ctx) => {
@@ -550,453 +536,11 @@ export function registerHandlers(bot: Bot, token: string) {
         return;
       }
       await ctx.reply(`🎙 *I heard:*\n${heard}`, { parse_mode: "Markdown" });
-      await handleCommand(ctx, transcript);
+      await handleLexonMessage(createTelegramSession(ctx), transcript);
     } catch {
       await ctx.reply("❌ Could not process voice message.");
     }
   });
-}
-
-async function handleCommand(ctx: Context, override?: string) {
-  const text = override ?? (ctx.message as any)?.text ?? "";
-  const userId = ctx.from?.id;
-
-  // Kullanıcı bağlamını Honcho'dan al (intent parsing'e ekle)
-  const userContext = userId ? await getUserContext(userId) : "";
-  const action = await parseIntent(text, userContext);
-
-  const ownerOnlyActions = new Set<Action["type"]>([
-    "send",
-    "balance",
-    "spending_summary",
-    "portfolio",
-    "wallet_score",
-    "wallet_patterns",
-    "positions",
-    "tx_history",
-    "research_query",
-    "bridge",
-    "swap_eth_usdc",
-    "swap_usdc_eth",
-  ]);
-
-  if (ownerOnlyActions.has(action.type) && !(await requireOwner(ctx, action.type))) {
-    return;
-  }
-
-  let response = "";
-
-  switch (action.type) {
-    case "send": {
-      let to = action.to;
-      const amount = Number.parseFloat(action.amount);
-      const requestedAction = describeRequestedAction("send", { amount: action.amount, to: action.to || action.name });
-
-      // İsimle gönderim: "Ali'ye gönder" → adres çözümle
-      if ((!to || !to.startsWith("0x")) && action.name && userId) {
-        const resolved = await resolveNameToAddress(userId, action.name);
-        if (!resolved) {
-          response = `🤔 "${action.name}" adına kayıtlı adres bulunamadı.\n\nŞunu dene: \`/allow 0x... ${action.name}\``;
-          logPolicyTrace({
-            decision: "deny",
-            requestedType: "send",
-            requestedAction,
-            guardCode: "name_resolution_failed",
-            matchedRules: ["recipient_resolution"],
-            denyReason: `No address found for ${action.name}`,
-          });
-          await ctx.reply(response, { parse_mode: "Markdown" });
-          break;
-        }
-        to = resolved;
-      }
-
-      // İlk kez gönderilen adres uyarısı
-      if (userId && to.startsWith("0x")) {
-        const known = await isKnownAddress(userId, to);
-        if (!known) {
-          logPolicyTrace({
-            decision: "deny",
-            requestedType: "send",
-            requestedAction,
-            guardCode: "recipient_not_trusted",
-            matchedRules: ["recipient_allowlist"],
-            denyReason: "Recipient is not yet trusted",
-            details: { recipient: to },
-          });
-          await ctx.reply(
-            `⚠️ *Yeni adres!*\n\n\`${to}\`\n\nBu adrese daha önce göndermemişsin. Devam etmek için tekrar "evet gönder ${action.amount} USDC to ${to}" yaz.`,
-            { parse_mode: "Markdown" }
-          );
-          break;
-        }
-      }
-
-      const confirmation = requireHighValueConfirmation(userId, { ...action, to }, amount);
-      if (!confirmation.ok) {
-        response = confirmation.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "send",
-          requestedAction,
-          guardCode: confirmation.code,
-          matchedRules: confirmation.matchedRules,
-          denyReason: confirmation.message,
-          details: confirmation.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-
-      const guard = enforceTransactionGuards({
-        kind: "send",
-        amountUSDC: Number.isFinite(amount) ? amount : undefined,
-        recipient: to,
-      });
-      if (!guard.ok) {
-        response = guard.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "send",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: guard.matchedRules,
-          denyReason: guard.message,
-          details: guard.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-
-      const msg = await ctx.reply("⏳ İşlem hazırlanıyor...");
-      response = await sendUSDC(to, action.amount);
-      if (isSuccessfulResponse(response)) {
-        recordSuccessfulTransaction({
-          kind: "send",
-          amountUSDC: Number.isFinite(amount) ? amount : undefined,
-          recipient: to,
-        });
-        logPolicyTrace({
-          decision: "allow",
-          requestedType: "send",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          executedAction: describeExecutedAction("send", { amount: action.amount, to }),
-          executionTxHash: extractTxHash(response) ?? undefined,
-          details: { recipient: to, usage: getGuardUsageSummary() },
-        });
-      } else {
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "send",
-          requestedAction,
-          guardCode: "execution_failed",
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          denyReason: response,
-          details: { recipient: to },
-        });
-      }
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
-        parse_mode: "Markdown",
-      });
-      break;
-    }
-    case "balance": {
-      const address = action.address || getWalletAddress();
-      response = await checkBalance(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "chain_balance": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await getChainBalance(address, action.chain);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "price": {
-      const msg = await ctx.reply("⏳ Fiyat alınıyor...");
-      response = await getETHPrice();
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
-        parse_mode: "Markdown",
-      });
-      break;
-    }
-    case "portfolio": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await getPortfolio(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "positions": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await getPositions(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "tx_history": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await getTransactionHistory(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "wallet_score": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await scoreWallet(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "wallet_patterns": {
-      const address = await resolveTargetAddress(ctx, action.address);
-      response = await getWalletPatterns(address);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "research_query": {
-      const msg = await ctx.reply("⏳ Paid research capability çağrılıyor...");
-      try {
-        response = await buyMarketResearch(action.query).catch((err: any) =>
-          `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
-        );
-        await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response);
-      } catch (err: any) {
-        response = `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 160) || "Unknown error"}`;
-        await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response);
-      }
-      break;
-    }
-    case "bridge": {
-      const amount = Number.parseFloat(action.amount);
-      const amountUSDC = action.fromToken.toUpperCase() === "USDC" && Number.isFinite(amount) ? amount : undefined;
-      const requestedAction = describeRequestedAction("bridge", {
-        amount: action.amount,
-        fromToken: action.fromToken,
-        fromChain: action.fromChain,
-        toChain: action.toChain,
-      });
-      const confirmation = requireHighValueConfirmation(userId, action, amountUSDC);
-      if (!confirmation.ok) {
-        response = confirmation.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "bridge",
-          requestedAction,
-          guardCode: confirmation.code,
-          matchedRules: confirmation.matchedRules,
-          denyReason: confirmation.message,
-          details: confirmation.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-      const guard = enforceTransactionGuards({
-        kind: "bridge",
-        amountUSDC,
-      });
-      if (!guard.ok) {
-        response = guard.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "bridge",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: guard.matchedRules,
-          denyReason: guard.message,
-          details: guard.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-      const msg = await ctx.reply(`⏳ Li.Fi route bulunuyor (${action.fromChain} → ${action.toChain})...`);
-      response = await bridge(action.fromChain, action.toChain, action.fromToken, action.amount, action.toToken);
-      if (isSuccessfulResponse(response)) {
-        recordSuccessfulTransaction({
-          kind: "bridge",
-          amountUSDC,
-        });
-        logPolicyTrace({
-          decision: "allow",
-          requestedType: "bridge",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          executedAction: describeExecutedAction("bridge", {
-            amount: action.amount,
-            fromToken: action.fromToken,
-            fromChain: action.fromChain,
-            toChain: action.toChain,
-          }),
-          executionTxHash: extractTxHash(response) ?? undefined,
-        });
-      } else {
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "bridge",
-          requestedAction,
-          guardCode: "execution_failed",
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          denyReason: response,
-        });
-      }
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "token_search": {
-      await ctx.replyWithChatAction("typing");
-      response = await searchToken(action.query, action.chain);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-    case "spending_summary": {
-      if (!userId) {
-        await ctx.reply("❌ Kullanıcı bilgisi alınamadı.");
-        break;
-      }
-      await ctx.replyWithChatAction("typing");
-      response = await getSpendingSummary(userId);
-      await ctx.reply(`📊 *Harcama Geçmişin*\n\n${response}`, { parse_mode: "Markdown" });
-      break;
-    }
-    case "help": {
-      response = HELP_TEXT;
-      await ctx.reply(HELP_TEXT, { parse_mode: "Markdown" });
-      break;
-    }
-    case "swap_eth_usdc": {
-      const requestedAction = describeRequestedAction("swap", {
-        amount: action.amount,
-        fromToken: "ETH",
-        toToken: "USDC",
-      });
-      const guard = enforceTransactionGuards({ kind: "swap" });
-      if (!guard.ok) {
-        response = guard.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: guard.matchedRules,
-          denyReason: guard.message,
-          details: guard.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-      const msg = await ctx.reply("⏳ ETH → USDC swap...");
-      response = await swapETHtoUSDC(action.amount, action.dex);
-      if (isSuccessfulResponse(response)) {
-        recordSuccessfulTransaction({ kind: "swap" });
-        logPolicyTrace({
-          decision: "allow",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: guard.matchedRules,
-          executedAction: describeExecutedAction("swap", { amount: action.amount, fromToken: "ETH", toToken: "USDC" }),
-          executionTxHash: extractTxHash(response) ?? undefined,
-        });
-      } else {
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: "execution_failed",
-          matchedRules: guard.matchedRules,
-          denyReason: response,
-        });
-      }
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
-        parse_mode: "Markdown",
-      });
-      break;
-    }
-    case "swap_usdc_eth": {
-      const amount = Number.parseFloat(action.amount);
-      const requestedAction = describeRequestedAction("swap", {
-        amount: action.amount,
-        fromToken: "USDC",
-        toToken: "ETH",
-      });
-      const confirmation = requireHighValueConfirmation(
-        userId,
-        action,
-        Number.isFinite(amount) ? amount : undefined
-      );
-      if (!confirmation.ok) {
-        response = confirmation.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: confirmation.code,
-          matchedRules: confirmation.matchedRules,
-          denyReason: confirmation.message,
-          details: confirmation.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-      const guard = enforceTransactionGuards({
-        kind: "swap",
-        amountUSDC: Number.isFinite(amount) ? amount : undefined,
-      });
-      if (!guard.ok) {
-        response = guard.message;
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: guard.matchedRules,
-          denyReason: guard.message,
-          details: guard.details,
-        });
-        await ctx.reply(response, { parse_mode: "Markdown" });
-        break;
-      }
-      const msg = await ctx.reply("⏳ USDC → ETH swap...");
-      response = await swapUSDCtoETH(action.amount, action.dex);
-      if (isSuccessfulResponse(response)) {
-        recordSuccessfulTransaction({
-          kind: "swap",
-          amountUSDC: Number.isFinite(amount) ? amount : undefined,
-        });
-        logPolicyTrace({
-          decision: "allow",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: guard.code,
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          executedAction: describeExecutedAction("swap", { amount: action.amount, fromToken: "USDC", toToken: "ETH" }),
-          executionTxHash: extractTxHash(response) ?? undefined,
-        });
-      } else {
-        logPolicyTrace({
-          decision: "deny",
-          requestedType: "swap",
-          requestedAction,
-          guardCode: "execution_failed",
-          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          denyReason: response,
-        });
-      }
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
-        parse_mode: "Markdown",
-      });
-      break;
-    }
-    case "unknown": {
-      response = await generateChatReply(text, userContext);
-      await ctx.reply(response, { parse_mode: "Markdown" });
-      break;
-    }
-  }
-
-  // Her etkileşimi Honcho'ya yaz (best-effort)
-  if (userId && text && response) {
-    await logInteraction(userId, text, response);
-  }
 }
 
 let _bot: Bot | null = null;

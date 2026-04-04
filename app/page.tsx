@@ -1,4 +1,3 @@
-const TELEGRAM_URL = "https://t.me/lexon_bot";
 const GITHUB_URL   = "https://github.com/dlkakbs/lexon";
 const OWS_URL      = "https://openwallet.sh/";
 const X402_PRICE   = process.env.X402_DEFAULT_PRICE || "$0.01";
@@ -15,7 +14,7 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
           <a href="#features" className="hover:text-green transition-colors">features</a>
-          <a href="#stack"    className="hover:text-green transition-colors">stack</a>
+          <a href="/dashboard" className="hover:text-green transition-colors">dashboard</a>
         </div>
         <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
           className="btn-green px-5 py-2 text-sm fade-in-3">
@@ -46,8 +45,8 @@ export default function Home() {
             </h1>
 
             <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 620, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
-              Lexon runs as a Telegram-based agent interface, uses OWS for delegated wallet access under user-defined rules,
-              and executes actions on Base.
+              Lexon is evolving into a private coordination layer for wallet agents: XMTP for group messaging,
+              OWS for delegated wallet access, and x402 for paid capability exchange on Base.
             </p>
 
             <div className="fade-in-5">
@@ -81,8 +80,8 @@ export default function Home() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { n: "01", title: "Natural input", desc: "Send a message via Telegram, voice, or call the Lexon API as an agent." },
-            { n: "02", title: "Intent to capability routing", desc: "Lexon interprets the request and routes it to an execution action or a capability endpoint." },
+            { n: "01", title: "Private rooms", desc: "Operators and agents coordinate inside private XMTP-backed rooms and dashboard surfaces." },
+            { n: "02", title: "Intent to capability routing", desc: "Lexon routes requests to local execution flows or remote agent capabilities." },
             { n: "03", title: "OWS delegated access", desc: "OWS gives the agent delegated wallet access and evaluates policy-defined limits and constraints before signing." },
             { n: "04", title: "Payment (x402)", desc: "Lexon can sell its own capabilities or pay remote agent endpoints over x402." },
             { n: "05", title: "On-chain execution", desc: "If approved, the transaction is signed via OWS, broadcast to Base, and a receipt is returned." },
@@ -137,14 +136,14 @@ export default function Home() {
                 desc: "Visible decisions, denial reasons, and usage logs.",
               },
               {
-                title: "Voice Interface",
-                cmd: "voice",
-                desc: "Speak instead of typing.",
-              },
-              {
                 title: "Memory",
                 cmd: "memory",
                 desc: "Saved contacts and habits.",
+              },
+              {
+                title: "XMTP Groups",
+                cmd: "coordination",
+                desc: "Private rooms for capability discovery and shared planning.",
               },
               {
                 title: "MoonPay",
@@ -175,6 +174,7 @@ export default function Home() {
           <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
           <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
             Lexon can expose paid capabilities for other agents and buy remote capabilities when it needs external intelligence.
+            XMTP handles the coordination layer; execution remains local.
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-6">

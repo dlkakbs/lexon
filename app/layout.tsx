@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lexon — DeFi Agent on Base",
-  description: "Self-hosted Telegram DeFi agent. Send USDC, swap, bridge cross-chain, track portfolio — via text or voice. Policy-gated by OWS. Built for OWS Hackathon 2026.",
+  title: "Lexon — Multi-Agent Wallet Coordination on Base",
+  description: "Private XMTP coordination, OWS policy-gated wallet execution, and x402 capability exchange for Lexon operators on Base.",
 };
 
 export default function RootLayout({
