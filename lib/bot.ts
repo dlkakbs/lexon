@@ -79,6 +79,7 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 /price — Anlık ETH fiyatı
 /bridge — Cross-chain bridge bilgisi
 /policy — Aktif OWS policy kuralları
+/catalog — x402 capability catalog linki
 
 👥 *Gönderim Listesi*
 /add <adres> [isim] — Gönderim listesine ekle
@@ -123,6 +124,22 @@ function registerHandlers(bot: Bot, token: string) {
     } catch {
       await ctx.reply("❌ Could not retrieve wallet address.");
     }
+  });
+
+  bot.command("catalog", async (ctx) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+    const catalogPath = "/api/x402/catalog";
+    const catalogUrl = appUrl ? `${appUrl}${catalogPath}` : catalogPath;
+
+    await ctx.reply(
+      `💸 *Lexon x402 Catalog*\n\n` +
+      `Lexon paid capability layer is optional. This catalog advertises what this instance can expose to other agents.\n\n` +
+      `🔗 Catalog: ${catalogUrl}\n\n` +
+      `Current mode:\n` +
+      `• self-hosted DeFi agent first\n` +
+      `• optional paid capabilities over x402`,
+      { parse_mode: "Markdown" }
+    );
   });
 
   // /add 0x... İsim — gönderim allowlist'i
