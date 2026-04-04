@@ -1,23 +1,24 @@
 # Lexon
 
-**Self-hosted DeFi agent on Base — text or voice, policy-gated by OWS, with optional x402 commerce.**
+**Self-hosted, policy-gated DeFi agent on Base — text or voice.**
 
-Lexon is a Telegram bot that lets you send USDC, swap tokens, bridge cross-chain, and monitor your portfolio using plain language. Each person runs their own instance with their own OWS wallet and custom policy limits. If you want, your instance can also publish paid capabilities or buy them from other agents over x402.
+Lexon is a Telegram bot that lets you send USDC, swap tokens, bridge cross-chain, and monitor your portfolio using plain language. Each person runs their own instance with their own OWS wallet and custom policy limits.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 ---
 
-## OWS + x402
+## OWS + Extensions
 
-Lexon's core product is still a **self-hosted DeFi agent**. OWS is the security layer: it gives the agent a wallet and enforces spend rules before signing. x402 is an optional commerce layer on top: a Lexon instance can expose paid capabilities to other agents, or buy paid capabilities from them.
+Lexon's core product is a **self-hosted DeFi agent**. OWS is the security layer: it gives the agent a wallet and enforces spend rules before signing.
 
 In short:
 
 - **OWS** = agent wallet + spend controls
 - **x402** = optional agent-to-agent payments
+- **XMTP** = optional wallet-native notifications
 
-This means Lexon works fine as a personal/self-hosted DeFi agent even without x402. The x402 layer just makes the same agent extensible for paid capability exchange.
+Lexon works fine as a self-hosted DeFi agent even without x402 or XMTP. Those layers are optional extensions, not the core product.
 
 ---
 
@@ -49,10 +50,10 @@ XMTP notification sent to recipient
 | 🎙 Voice commands | Send a Telegram voice note — Whisper transcribes it |
 | 🧠 Personalized Memory | Honcho remembers your habits, named addresses, spending patterns |
 | 🛡 OWS Policy | 8 configurable spend rules: per-tx, daily, cooldown, contract whitelist |
-| 📩 XMTP notifications | Recipient gets wallet-native alert on payment |
+| 📩 XMTP notifications | Optional recipient alert after payment |
 | 💳 MoonPay on-ramp | Fund wallet without leaving Telegram |
 | ⚙️ Self-hosted | Run your own instance — your keys, your wallet, your limits |
-| 💸 Optional x402 layer | Publish paid agent capabilities or buy other agent services |
+| 💸 Optional x402 layer | Add paid capability exchange if you want it |
 
 ---
 
@@ -61,14 +62,14 @@ XMTP notification sent to recipient
 | Tool | Role |
 |---|---|
 | **[OWS](https://docs.openwallet.sh/)** | Wallet management + policy-gated signing (8 rules) |
-| **[x402](https://docs.x402.org/)** | Optional agent-to-agent payment layer for paid capabilities |
+| **[x402](https://docs.x402.org/)** | Optional paid capability layer |
 | **[Base](https://base.org/)** | L2 network — native USDC, fast finality |
 | **[Claude](https://openrouter.ai/)** via OpenRouter / Anthropic / OpenAI | Intent parsing from natural language |
 | **[Whisper](https://openai.com/research/whisper)** | Voice note transcription |
 | **[Honcho](https://honcho.dev/)** | Personalized memory — user habits, named addresses, spending history |
 | **[Zerion](https://zerion.io/)** | Multi-chain portfolio, positions, PnL, transaction history |
 | **[Li.Fi](https://li.fi/)** | Cross-chain bridge — 17+ EVM chains, OWS-signed txs |
-| **[XMTP](https://xmtp.org/)** | Wallet-native payment notifications to recipients |
+| **[XMTP](https://xmtp.org/)** | Optional wallet-native payment notifications |
 | **[MoonPay](https://www.moonpay.com/)** | USDC on-ramp via `/fund` |
 | **[Uniswap V3](https://uniswap.org/)** | ETH ↔ USDC swaps (SwapRouter02) |
 | **[Uniswap Universal Router](https://uniswap.org/)** | Multi-hop swap routing |

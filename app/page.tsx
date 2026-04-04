@@ -54,14 +54,14 @@ export default function Home() {
               color: "var(--green)",
               marginBottom: "1.5rem",
             }}>
-              DeFi agent.<br />
-              <span style={{ color: "var(--text)" }}>Natural language.</span>
+              Self-hosted<br />
+              <span style={{ color: "var(--text)" }}>DeFi agent.</span>
             </h1>
 
             <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 480, marginBottom: "2rem" }}>
               Send USDC · swap tokens · bridge cross-chain · track portfolio.
               All via Telegram, text or voice. Policy-gated by OWS.
-              Self-hosted — your keys, your limits, your agent.
+              Your wallet, your limits, your agent.
             </p>
 
             <div className="flex flex-wrap gap-3 fade-in-5">
@@ -241,7 +241,7 @@ export default function Home() {
                 tag: "notify", tagColor: "tag-cyan",
                 title: "XMTP Notifications",
                 cmd: "auto on payment",
-                desc: "Recipient wallet address gets a wallet-native payment alert visible in Coinbase Wallet, Converse.",
+                desc: "Optional wallet-native payment alert layer after successful transfers.",
               },
               {
                 tag: "onramp", tagColor: "tag-green",
@@ -269,9 +269,9 @@ export default function Home() {
               },
               {
                 tag: "x402", tagColor: "tag-yellow",
-                title: "Agent Commerce Layer",
+                title: "Optional x402 Layer",
                 cmd: "/api/x402/catalog",
-                desc: "Optional x402 layer for publishing paid capabilities and buying other agent services without changing the core self-hosted flow.",
+                desc: "Optional extension for publishing paid capabilities or calling other paid agent services.",
               },
             ].map((f) => (
               <div key={f.title} className="term-card">
@@ -413,7 +413,7 @@ export default function Home() {
                 <tbody>
                   {[
                     { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "native: chain allowlist + expiry; app-layer: spend guards" },
-                    { mod: "@x402/next · @x402/fetch",   role: "Paid Capabilities",          note: "optional commerce layer for selling and buying agent services" },
+                    { mod: "@x402/next · @x402/fetch",   role: "Optional Commerce Layer",    note: "paid capability rails when you want agent-to-agent payments" },
                     { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
                     { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
                     { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
@@ -558,11 +558,11 @@ export default function Home() {
         </div>
         <h2 style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 700, color: "var(--green)", letterSpacing: "-0.02em", marginBottom: 16 }}
           className="glow">
-          Your DeFi agent awaits.
+          Run your own DeFi agent.
         </h2>
         <p style={{ color: "var(--muted)", fontSize: 15, marginBottom: 36, lineHeight: 1.8 }}>
           Open Telegram. Type or speak. Watch it settle on Base.<br />
-          Self-host your own agent. Add paid capabilities if you want.
+          Self-host it, set the limits, keep the wallet under control.
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
           <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
