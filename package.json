@@ -2,10 +2,16 @@
   "name": "lexon",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "lexon": "./bin/lexon.cjs",
+    "lexon-gateway": "./bin/lexon.cjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "gateway": "tsx dev-bot.ts",
+    "lexon": "tsx dev-bot.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

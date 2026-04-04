@@ -46,6 +46,24 @@ Then run the bot:
 npx tsx dev-bot.ts
 ```
 
+If you want a direct terminal command instead of `npx tsx dev-bot.ts`, run this once:
+
+```bash
+npm link
+```
+
+Then you can start Lexon with:
+
+```bash
+lexon
+```
+
+or:
+
+```bash
+lexon-gateway
+```
+
 Set `TELEGRAM_OWNER_IDS` in `.env.local` to the Telegram user IDs allowed to use wallet, admin, and paid buyer flows.
 
 To deploy the web app:

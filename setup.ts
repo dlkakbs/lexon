@@ -354,6 +354,10 @@ X402_REMOTE_RESEARCH_URL=${remoteResearchUrl}
   }
   console.log("Botu başlatmak için:");
   console.log("  npx tsx dev-bot.ts\n");
+  console.log("İstersen bir kere `npm link` çalıştırıp sonra doğrudan:");
+  console.log("  lexon");
+  console.log("veya");
+  console.log("  lexon-gateway\n");
   console.log("Telegram'da /start yaz ve başla!");
   hr();
 
