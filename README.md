@@ -107,33 +107,29 @@ This returns:
 - route and fee estimate
 - what would execute if approved
 
-The research route is included as a demo capability for local development and buyer-flow testing. It should not be treated as the main public seller surface.
+To expose your own paid capability:
+
+- run the web app
+- publish your Lexon URL
+- share the endpoint from `/api/x402/catalog`
+
+The research route is included as a demo capability for local development and buyer-flow testing. It is not the main public seller surface.
 
 ## x402 Buyer
 
 Lexon can also buy remote paid capabilities over x402. The first built-in buyer flow is paid market research.
 
-Set:
-
-`X402_REMOTE_RESEARCH_URL=https://...`
-
-Then use:
+Built-in flow:
 
 `/research Base vs Arbitrum stablecoin activity this week`
 
-The remote endpoint should accept a `q` query parameter and return JSON.
+To connect a real paid endpoint:
 
-If `X402_REMOTE_RESEARCH_URL` is not set, Lexon falls back to:
+- set `X402_REMOTE_RESEARCH_URL` in `.env.local`
+- point it to a compatible remote research capability
+- restart Lexon
 
-`NEXT_PUBLIC_APP_URL/api/x402/paid/research`
-
-For local testing, run the web app too:
-
-```bash
-npm run dev
-```
-
-In local development, the research capability is treated as a demo route so buyer-flow testing works without a live facilitator. For real agent-to-agent purchases, point `X402_REMOTE_RESEARCH_URL` at an actual paid remote capability.
+For demo/testing, Lexon also includes a local research capability.
 
 ## Notes
 
