@@ -265,6 +265,37 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Live x402 capability ── */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mb-8">
+          <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
+          <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
+            Any agent can call this endpoint and pay via x402.
+          </div>
+        </div>
+        <div className="term-window" style={{ maxWidth: 760 }}>
+          <div className="term-titlebar">
+            <span className="term-dot term-dot-red" />
+            <span className="term-dot term-dot-yellow" />
+            <span className="term-dot term-dot-green" />
+            <span className="term-title">evaluate_bridge</span>
+          </div>
+          <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
+            <div className="text-cyan">endpoint</div>
+            <div className="text-muted">/api/x402/paid/evaluate-bridge</div>
+
+            <div className="text-cyan" style={{ marginTop: 10 }}>input</div>
+            <div className="text-muted">fromChain · toChain · fromToken · amount</div>
+
+            <div className="text-cyan" style={{ marginTop: 10 }}>output</div>
+            <div className="text-muted">allow/deny · matched rules · route · fee</div>
+
+            <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
+            <div className="text-muted">paid via x402</div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="max-w-2xl mx-auto px-6 py-24 text-center">
         <div className="text-muted text-sm mb-4">
