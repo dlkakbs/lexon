@@ -28,7 +28,7 @@ const handler = async (request: NextRequest): Promise<NextResponse<any>> => {
   });
 };
 
-export const GET = withX402(
+const paidGet = withX402(
   handler,
   createPaidRouteConfig("Lexon paid bridge preflight"),
   getX402Server(),
@@ -36,3 +36,11 @@ export const GET = withX402(
   undefined,
   false,
 );
+
+export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV !== "production") {
+    return handler(request);
+  }
+
+  return paidGet(request);
+}

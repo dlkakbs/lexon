@@ -134,6 +134,8 @@ For local testing, run the web app too:
 npm run dev
 ```
 
+In local development, paid x402 routes fall back to direct responses so you can test buyer and seller flows without a live facilitator. Production keeps the x402 paywall enabled.
+
 ## Notes
 
 - OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.
