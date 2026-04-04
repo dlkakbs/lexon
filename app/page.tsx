@@ -42,7 +42,7 @@ export default function Home() {
               marginBottom: "1.5rem",
             }}>
               Self-hosted, policy-gated<br />
-              <span style={{ color: "var(--text)" }}>wallet operator for</span><br />
+              <span style={{ color: "var(--text)" }}>wallet layer for</span><br />
               <span style={{ color: "var(--text)" }}>AI agents</span>
             </h1>
 
