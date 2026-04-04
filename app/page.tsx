@@ -41,7 +41,8 @@ export default function Home() {
               marginBottom: "1.5rem",
             }}>
               Self-hosted, policy-gated<br />
-              <span style={{ color: "var(--text)" }}>wallet operator for AI agents</span>
+              <span style={{ color: "var(--text)" }}>wallet operator for</span><br />
+              <span style={{ color: "var(--text)" }}>AI agents</span>
             </h1>
 
             <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 620, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
@@ -157,6 +158,55 @@ export default function Home() {
                 <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.65 }}>{f.desc}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Policy trace ── */}
+      <section id="policy" className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mb-4">
+          <span className="text-muted text-sm">$ </span>
+          <span className="text-green text-sm font-bold">cat POLICY_TRACE.log</span>
+        </div>
+        <div className="mb-8">
+          <div className="text-green font-bold text-sm mb-2">Agent can act, but only within visible policy</div>
+          <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
+            Every requested action is checked before signing. Lexon shows what was requested, which rules matched,
+            whether it was allowed, and what actually executed.
+          </div>
+        </div>
+        <div className="term-window">
+          <div className="term-titlebar">
+            <span className="term-dot term-dot-red" />
+            <span className="term-dot term-dot-yellow" />
+            <span className="term-dot term-dot-green" />
+            <span className="term-title">policy-trace</span>
+          </div>
+          <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
+            <div className="text-cyan">requested_action</div>
+            <div className="text-muted">send 80 USDC to saved contact on Base</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>policy_match</div>
+            <div className="text-muted">allowed_chain=base · max_send_usdc=100 · recipient_allowlist=matched</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>decision</div>
+            <div className="text-green">allow</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>executed_action</div>
+            <div className="text-muted">send 80 USDC to 0x742d...d8ab</div>
+
+            <div style={{ borderTop: "1px solid var(--border-dim)", margin: "14px 0" }} />
+
+            <div className="text-cyan">requested_action</div>
+            <div className="text-muted">send 140 USDC to new address</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>policy_match</div>
+            <div className="text-muted">max_send_usdc=100 · recipient_allowlist=missing · confirmation_threshold=25</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>decision</div>
+            <div className="text-red-400" style={{ color: "#ff7a7a" }}>deny</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>deny_reason</div>
+            <div className="text-muted">exceeds per-tx limit and recipient is not yet trusted</div>
+
+            <div style={{ borderTop: "1px solid var(--border-dim)", margin: "14px 0" }} />
+
+            <div className="text-cyan">daily_usage</div>
+            <div className="text-muted">used_today=82 USDC · tx_count=2 · cooldown=clear</div>
           </div>
         </div>
       </section>
