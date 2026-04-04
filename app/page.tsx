@@ -49,14 +49,13 @@ export default function Home() {
               color: "var(--green)",
               marginBottom: "1.5rem",
             }}>
-              Self-hosted<br />
-              <span style={{ color: "var(--text)" }}>DeFi agent.</span>
+              Self-hosted, policy-gated<br />
+              <span style={{ color: "var(--text)" }}>wallet operator for AI agents.</span>
             </h1>
 
-            <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 480, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
-              Send USDC · swap tokens · bridge cross-chain · track portfolio.
-              All via Telegram, text or voice. Policy-gated by OWS.
-              Your wallet, your limits, your agent.
+            <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 620, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
+              Lexon runs as a Telegram-based agent interface, uses OWS for delegated wallet access under user-defined rules,
+              and executes actions on Base.
             </p>
 
             <div className="fade-in-5">
@@ -134,9 +133,9 @@ export default function Home() {
                 desc: "Multi-chain balances.",
               },
               {
-                title: "Policy",
+                title: "OWS Controls",
                 cmd: "policy",
-                desc: "Chain, spend, and contract controls.",
+                desc: "Delegated access, chain, spend, and contract controls.",
               },
               {
                 title: "Voice",
@@ -156,7 +155,7 @@ export default function Home() {
               {
                 title: "x402",
                 cmd: "catalog",
-                desc: "Optional paid capabilities.",
+                desc: "Monetizable capabilities over x402.",
               },
             ].map((f) => (
               <div key={f.title} className="term-card">
@@ -204,7 +203,7 @@ export default function Home() {
                     { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Natural language to action" },
                     { mod: "OpenAI Whisper",             role: "Voice Input",               note: "Voice note transcription" },
                     { mod: "grammy",                    role: "Telegram Bot",              note: "Webhook + bot command handling" },
-                    { mod: "@x402/next · @x402/fetch",   role: "Optional x402",             note: "Paid capabilities when enabled" },
+                    { mod: "@x402/next · @x402/fetch",   role: "x402 Commerce Layer",       note: "Monetizable capabilities and agent payments" },
                   ].map((r) => (
                     <tr key={r.mod}>
                       <td><span className="text-green" style={{ fontSize: 12 }}>{r.mod}</span></td>

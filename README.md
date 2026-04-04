@@ -1,8 +1,8 @@
 # Lexon
 
-Self-hosted, policy-gated DeFi agent on Base.
+Self-hosted, policy-gated wallet operator for AI agents.
 
-Lexon is a Telegram bot that lets you send USDC, swap, bridge, and check your portfolio with plain language. Each user runs their own instance with their own OWS wallet and their own limits.
+Lexon runs as a Telegram-based agent interface, uses OWS for delegated wallet access under user-defined rules, and executes actions on Base.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
@@ -14,8 +14,8 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - View multi-chain balances
 - Score a Base wallet and inspect recent patterns
 - Use text or voice in Telegram
-- Apply OWS-based chain, spend, and contract controls
-- Add optional memory, wallet intelligence, MoonPay, and x402 capability support
+- Apply delegated wallet access with OWS-based chain, spend, and contract controls
+- Add memory, wallet intelligence, MoonPay, and monetizable capabilities over x402
 
 ## Stack
 
@@ -28,7 +28,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Whisper for voice transcription
 - Honcho for optional memory
 - MoonPay for optional on-ramp
-- x402 for optional paid capabilities
+- x402 for monetizable capabilities
 - Next.js and grammy for the app and bot
 
 ## Quick Start
@@ -65,14 +65,14 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/price` - ETH price
 - `/bridge` - bridge info
 - `/policy` - active limits
-- `/catalog` - optional x402 catalog
+- `/catalog` - x402 capability catalog
 - `/fund` - MoonPay on-ramp
 - `/memory` - saved memory summary
 
 ## Notes
 
 - OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.
-- x402 is optional. Lexon works without it.
+- x402 adds monetizable capabilities and agent payments.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 
 ## License
