@@ -37,15 +37,20 @@ OWS is the wallet and policy layer. The agent never holds keys directly — it r
 
 Two modes:
 
-- **Agent mode** (`OWS_API_KEY` set) — every transaction goes through the policy executable before signing. This is the intended production mode.
+- **Agent mode** (`OWS_API_KEY` set) — every transaction goes through the policy before signing. This is the intended production mode.
 - **Owner mode** (empty key) — policy is bypassed. Development only.
 
-The policy runs as a custom executable (`policy/spend_limit.js`). OWS pipes a `PolicyContext` to it before every signing operation. The executable checks:
+OWS provides two built-in declarative rules out of the box:
 
-- Contract allowlist — only pre-approved DEXes and bridges
-- USDC per-tx cap — decoded from ERC-20 calldata
-- ETH per-tx cap — checked against the raw transaction value
-- Daily ETH cap — using OWS-native `spending.daily_total`
+- `allowed_chains` — restricts signing to specific CAIP-2 chain IDs
+- `expires_at` — time-bounds the API key
+
+Everything else is enforced by a custom policy executable (`policy/spend_limit.js`). OWS pipes a `PolicyContext` JSON to it on stdin before every signing operation and expects a `PolicyResult` on stdout. The executable adds:
+
+- **Contract allowlist** — only pre-approved DEXes and bridges can be called
+- **USDC per-tx cap** — decoded directly from ERC-20 calldata (`transfer(address,uint256)`)
+- **ETH per-tx cap** — checked against the raw transaction value in wei
+- **Daily ETH cap** — accumulated using OWS-native `spending.daily_total`
 
 Users can approve additional contracts at runtime via `/approve` without restarting or re-registering the policy. The executable reads `data/contracts.json` live on each evaluation.
 
