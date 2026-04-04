@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --bg:          #090705;
-  --bg-panel:    #0f0c09;
-  --bg-card:     #130f0b;
+  --bg:          #110d0a;
+  --bg-panel:    #17120e;
+  --bg-card:     #1d1712;
   --green:       #BB734B;   /* Brown Sugar  — primary accent  */
   --green-dim:   #9A5A32;
   --green-dark:  #3D2C22;   /* Bistre       — subtle bg tint  */
@@ -11,9 +11,9 @@
   --yellow:      #F5EBE0;   /* cream / ivory                  */
   --red:         #ff5f56;
   --text:        #EDD9C0;   /* warm cream text                */
-  --muted:       #7A5A3A;
+  --muted:       #B08A68;
   --border:      rgba(187, 115, 75, 0.2);
-  --border-dim:  rgba(187, 115, 75, 0.08);
+  --border-dim:  rgba(187, 115, 75, 0.12);
 }
 
 * { box-sizing: border-box; }

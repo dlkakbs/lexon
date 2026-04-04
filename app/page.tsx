@@ -199,8 +199,7 @@ export default function Home() {
               <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
               <div className="text-muted">paid via x402 · {X402_PRICE}</div>
 
-              <div className="text-cyan" style={{ marginTop: 10 }}>next</div>
-              <div className="text-muted">more capabilities coming soon</div>
+              <div className="text-muted" style={{ marginTop: 10 }}>* more capabilities coming soon</div>
             </div>
           </div>
 
