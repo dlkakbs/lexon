@@ -15,7 +15,7 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
           <a href="#features" className="hover:text-green transition-colors">features</a>
-          <a href="#policy"   className="hover:text-green transition-colors">policy</a>
+          <a href="#x402"     className="hover:text-green transition-colors">x402</a>
           <a href="#stack"    className="hover:text-green transition-colors">stack</a>
         </div>
         <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
@@ -171,7 +171,7 @@ export default function Home() {
       </section>
 
       {/* ── Live x402 capability ── */}
-      <section id="policy" className="max-w-6xl mx-auto px-6 py-16">
+      <section id="x402" className="max-w-6xl mx-auto px-6 py-16">
         <div className="mb-8">
           <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
           <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>

@@ -19,7 +19,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 ## Stack
 
-- OWS for wallet management, scoped agent access, policy validation, and signing
+- OWS for local wallet storage, scoped agent access, policy validation, and signing
 - Base for execution
 - Li.Fi for bridging
 - Zerion for portfolio data
