@@ -15,7 +15,6 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
           <a href="#features" className="hover:text-green transition-colors">features</a>
-          <a href="#x402"     className="hover:text-green transition-colors">x402</a>
           <a href="#stack"    className="hover:text-green transition-colors">stack</a>
         </div>
         <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
