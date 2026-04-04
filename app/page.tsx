@@ -79,12 +79,14 @@ export default function Home() {
           <span className="text-muted text-sm">$ </span>
           <span className="text-green text-sm font-bold">cat HOW_IT_WORKS.md</span>
         </div>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { n: "01", title: "Text or Voice",       desc: "Send a Telegram message or voice note in any language." },
-            { n: "02", title: "From message to action", desc: "Lexon understands what you want and maps it to an on-chain action." },
-            { n: "03", title: "OWS wallet and policy", desc: "OWS gives the agent wallet access and validates the action against your rules before signing." },
-            { n: "04", title: "On-chain execution",  desc: "Transaction broadcast to Base with instant receipt." },
+            { n: "01", title: "Natural input", desc: "Send a message via Telegram, voice, or call the Lexon API as an agent." },
+            { n: "02", title: "Intent to capability routing", desc: "Lexon interprets the request and routes it to an execution action or a capability endpoint." },
+            { n: "03", title: "OWS wallet and policy", desc: "OWS gives the agent wallet access, then policies, limits, allowlists, and constraints are checked before execution." },
+            { n: "04", title: "Payment (x402, optional)", desc: "For external calls, Lexon can require payment via x402 so capabilities become monetizable APIs." },
+            { n: "05", title: "On-chain execution", desc: "If approved, the transaction is signed via OWS, broadcast to Base, and a receipt is returned." },
+            { n: "06", title: "Audit and transparency", desc: "Every action produces decision logs, denial reasons when relevant, and usage summaries." },
           ].map((s) => (
             <div key={s.n} className="term-card">
               <div className="text-green font-bold text-sm mb-2">{s.title}</div>
@@ -120,17 +122,22 @@ export default function Home() {
                 desc: "Bridge from Base to 10+ chains.",
               },
               {
-                title: "Portfolio",
+                title: "Wallet Intelligence",
                 cmd: "portfolio",
-                desc: "Multi-chain balances.",
+                desc: "Balances, wallet score, and recent patterns.",
               },
               {
-                title: "OWS Controls",
+                title: "OWS Delegation",
                 cmd: "policy",
-                desc: "Delegated access, chain, spend, and contract controls.",
+                desc: "Delegated wallet access with policy-gated signing.",
               },
               {
-                title: "Voice",
+                title: "Policy Trace",
+                cmd: "audit",
+                desc: "Visible decisions, denial reasons, and usage logs.",
+              },
+              {
+                title: "Voice Interface",
                 cmd: "voice",
                 desc: "Speak instead of typing.",
               },
@@ -142,10 +149,10 @@ export default function Home() {
               {
                 title: "MoonPay",
                 cmd: "on-ramp",
-                desc: "Optional USDC on-ramp.",
+                desc: "Fund the wallet on Base.",
               },
               {
-                title: "x402",
+                title: "x402 Capabilities",
                 cmd: "catalog",
                 desc: "Monetizable capabilities over x402.",
               },
@@ -171,11 +178,10 @@ export default function Home() {
         <div className="mb-8">
           <div className="text-green font-bold text-sm mb-2">Agent can act, but only within visible policy</div>
           <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
-            Every requested action is checked before signing. Lexon shows what was requested, which rules matched,
-            whether it was allowed, and what actually executed.
+            Every request is checked before signing, with full transparency into intent, policy evaluation, decision, and execution.
           </div>
         </div>
-        <div className="term-window">
+        <div className="term-window" style={{ maxWidth: 760 }}>
           <div className="term-titlebar">
             <span className="term-dot term-dot-red" />
             <span className="term-dot term-dot-yellow" />
