@@ -5,6 +5,7 @@ import {
   deletePolicy,
   signAndSend,
   signTransaction,
+  signTypedData,
   type WalletInfo,
 } from "@open-wallet-standard/core";
 import path from "path";
@@ -114,5 +115,14 @@ export function owsSignAndSend(txHex: string): string {
 export function owsSignTx(txHex: string): string {
   const credential = config.owsApiKey || undefined;
   const result     = signTransaction(WALLET_NAME, "eip155:8453", txHex, credential);
+  return result.signature;
+}
+
+/**
+ * Sign EIP-712 typed data via OWS.
+ */
+export function owsSignTypedData(typedDataJson: string): string {
+  const credential = config.owsApiKey || undefined;
+  const result = signTypedData(WALLET_NAME, "eip155:8453", typedDataJson, credential);
   return result.signature;
 }

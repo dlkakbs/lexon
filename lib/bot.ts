@@ -187,6 +187,10 @@ const KNOWN_COMMANDS = new Set([
 ]);
 
 export function registerHandlers(bot: Bot, token: string) {
+  bot.catch((err) => {
+    console.error("Telegram bot handler error:", err.error);
+  });
+
   bot.command("start", async (ctx) => {
     await ctx.reply(
       `👋 Hey! I'm *Lexon* — your AI assistant for Base transactions.\n\n` +
@@ -250,12 +254,18 @@ export function registerHandlers(bot: Bot, token: string) {
     }
 
     const msg = await ctx.reply("⏳ Ücretli research capability çağrılıyor...");
-    const result = await buyMarketResearch(query).catch((err: any) =>
-      `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
-    );
-    await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, result, {
-      parse_mode: "Markdown",
-    });
+    try {
+      const result = await buyMarketResearch(query).catch((err: any) =>
+        `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
+      );
+      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, result);
+    } catch (err: any) {
+      await ctx.api.editMessageText(
+        ctx.chat!.id,
+        msg.message_id,
+        `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 160) || "Unknown error"}`
+      );
+    }
   });
 
   bot.command("audit", async (ctx) => {
@@ -715,12 +725,15 @@ async function handleCommand(ctx: Context, override?: string) {
     }
     case "research_query": {
       const msg = await ctx.reply("⏳ Paid research capability çağrılıyor...");
-      response = await buyMarketResearch(action.query).catch((err: any) =>
-        `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
-      );
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
-        parse_mode: "Markdown",
-      });
+      try {
+        response = await buyMarketResearch(action.query).catch((err: any) =>
+          `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
+        );
+        await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response);
+      } catch (err: any) {
+        response = `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 160) || "Unknown error"}`;
+        await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response);
+      }
       break;
     }
     case "bridge": {

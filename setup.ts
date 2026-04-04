@@ -335,7 +335,7 @@ HONCHO_API_KEY=${honchoKey}
 # Allium (wallet intelligence)
 ALLIUM_API_KEY=${alliumKey}
 
-# x402 buyer (remote research capability)
+# x402 buyer (remote research capability via the same OWS wallet)
 X402_REMOTE_RESEARCH_URL=${remoteResearchUrl}
 `;
 

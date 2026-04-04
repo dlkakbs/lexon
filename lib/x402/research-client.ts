@@ -21,15 +21,15 @@ function normalizeResearchResponse(data: any): string {
     data?.report;
 
   if (typeof summary === "string" && summary.trim()) {
-    return `🧠 *${title}*\n\n${summary.trim()}`;
+    return `Research: ${title}\n\n${summary.trim()}`;
   }
 
   if (Array.isArray(data?.highlights) && data.highlights.length > 0) {
     const lines = data.highlights.slice(0, 5).map((item: any) => `• ${String(item)}`);
-    return `🧠 *${title}*\n\n${lines.join("\n")}`;
+    return `Research: ${title}\n\n${lines.join("\n")}`;
   }
 
-  return `🧠 *${title}*\n\n\`\`\`json\n${JSON.stringify(data, null, 2).slice(0, 1200)}\n\`\`\``;
+  return `Research: ${title}\n\n${JSON.stringify(data, null, 2).slice(0, 1200)}`;
 }
 
 export async function buyMarketResearch(query: string): Promise<string> {
