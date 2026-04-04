@@ -3,6 +3,7 @@ import {
   USDC_ADDRESS,
   USDC_DECIMALS,
 } from "../base";
+import { getEip1559Fees } from "../fees";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { encodeFunctionData, parseEther, parseUnits, serializeTransaction } from "viem";
 import { config } from "../config";
@@ -132,9 +133,9 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
     const from = getWalletAddress() as `0x${string}`;
     const amountIn = parseEther(ethAmount);
 
-    const [nonce, gasPrice] = await Promise.all([
+    const [nonce, fees] = await Promise.all([
       publicClient.getTransactionCount({ address: from }),
-      publicClient.getGasPrice(),
+      getEip1559Fees(),
     ]);
 
     const { fee, data, gas } = await findUsableSwapPath(
@@ -146,11 +147,13 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
     );
 
     const txHex = serializeTransaction({
+      type: "eip1559",
       chainId: 8453,
       to: ROUTERS.uniswap_v3,
       data,
       nonce,
-      gasPrice,
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       gas,
       value: amountIn,
     });
@@ -205,9 +208,9 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
       args: [router, amountIn],
     });
 
-    const [nonce, gasPrice] = await Promise.all([
+    const [nonce, fees] = await Promise.all([
       publicClient.getTransactionCount({ address: from }),
-      publicClient.getGasPrice(),
+      getEip1559Fees(),
     ]);
 
     const approveGas = await publicClient.estimateGas({
@@ -217,11 +220,13 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
     });
 
     const approveTx = serializeTransaction({
+      type: "eip1559",
       chainId: 8453,
       to: USDC_ADDRESS,
       data: approveData,
       nonce,
-      gasPrice,
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       gas: approveGas,
       value: 0n,
     });
@@ -239,11 +244,13 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
     );
 
     const swapTx = serializeTransaction({
+      type: "eip1559",
       chainId: 8453,
       to: router,
       data: swapData,
       nonce: nonce + 1,
-      gasPrice,
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       gas: swapGas,
       value: 0n,
     });

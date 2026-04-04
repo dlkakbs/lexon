@@ -7,6 +7,7 @@
 
 import { encodeFunctionData, parseUnits, serializeTransaction } from "viem";
 import { publicClient } from "../base";
+import { getEip1559Fees } from "../fees";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { approveContract, isApprovedContract } from "../contracts";
 import { config } from "../config";
@@ -376,12 +377,22 @@ export async function bridge(
           functionName: "approve",
           args: [approvalAddress as `0x${string}`, BigInt(fromAmountRaw)],
         });
-        const [nonce, gasPrice] = await Promise.all([
+        const [nonce, fees] = await Promise.all([
           publicClient.getTransactionCount({ address: fromAddress }),
-          publicClient.getGasPrice(),
+          getEip1559Fees(),
         ]);
         const gas = await publicClient.estimateGas({ account: fromAddress, to: approveTarget, data });
-        const approveTxHex = serializeTransaction({ chainId: fromChainId, to: approveTarget, data, nonce, gasPrice, gas, value: 0n });
+        const approveTxHex = serializeTransaction({
+          type: "eip1559",
+          chainId: fromChainId,
+          to: approveTarget,
+          data,
+          nonce,
+          maxFeePerGas: fees.maxFeePerGas,
+          maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+          gas,
+          value: 0n,
+        });
         const approveTxHash = owsSignAndSend(approveTxHex);
         await publicClient.waitForTransactionReceipt({ hash: approveTxHash as `0x${string}` });
       }
@@ -395,13 +406,18 @@ export async function bridge(
       approveContract(txReq.to, `Li.Fi route (${bridge})`);
     }
 
-    const nonce = await publicClient.getTransactionCount({ address: fromAddress });
+    const [nonce, fees] = await Promise.all([
+      publicClient.getTransactionCount({ address: fromAddress }),
+      getEip1559Fees(),
+    ]);
     const txHex = serializeTransaction({
+      type: "eip1559",
       chainId:  fromChainId,
       to:       txReq.to as `0x${string}`,
       data:     txReq.data as `0x${string}`,
       value:    BigInt(txReq.value ?? "0x0"),
-      gasPrice: BigInt(txReq.gasPrice),
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       gas:      BigInt(txReq.gasLimit),
       nonce,
     });

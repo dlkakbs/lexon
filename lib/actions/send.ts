@@ -5,6 +5,7 @@ import {
   USDC_ABI,
   getUSDCBalance,
 } from "../base";
+import { getEip1559Fees } from "../fees";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { isAllowed } from "../allowlist";
 import { isAddress, parseUnits, encodeFunctionData, serializeTransaction } from "viem";
@@ -53,23 +54,25 @@ export async function sendUSDC(to: string, amount: string): Promise<string> {
     });
 
     // Fetch nonce + gas
-    const [nonce, gasPrice, gasEstimate] = await Promise.all([
+    const [nonce, gasEstimate, fees] = await Promise.all([
       publicClient.getTransactionCount({ address: from }),
-      publicClient.getGasPrice(),
       publicClient.estimateGas({
         account: from,
         to: USDC_ADDRESS,
         data,
       }),
+      getEip1559Fees(),
     ]);
 
     // Serialize unsigned tx
     const txHex = serializeTransaction({
+      type: "eip1559",
       chainId: 8453,
       to: USDC_ADDRESS,
       data,
       nonce,
-      gasPrice,
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       gas: gasEstimate,
       value: 0n,
     });
