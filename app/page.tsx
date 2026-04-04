@@ -83,7 +83,7 @@ export default function Home() {
           {[
             { n: "01", title: "Natural input", desc: "Send a message via Telegram, voice, or call the Lexon API as an agent." },
             { n: "02", title: "Intent to capability routing", desc: "Lexon interprets the request and routes it to an execution action or a capability endpoint." },
-            { n: "03", title: "OWS wallet and policy", desc: "OWS gives the agent wallet access, then policies, limits, allowlists, and constraints are checked before execution." },
+            { n: "03", title: "OWS delegated access", desc: "OWS gives the agent delegated wallet access and evaluates policy-defined limits and constraints before signing." },
             { n: "04", title: "Payment (x402, optional)", desc: "For external calls, Lexon can require payment via x402 so capabilities become monetizable APIs." },
             { n: "05", title: "On-chain execution", desc: "If approved, the transaction is signed via OWS, broadcast to Base, and a receipt is returned." },
             { n: "06", title: "Audit and transparency", desc: "Every action produces decision logs, denial reasons when relevant, and usage summaries." },
@@ -127,9 +127,9 @@ export default function Home() {
                 desc: "Balances, wallet score, and recent patterns.",
               },
               {
-                title: "OWS Delegation",
+                title: "OWS Delegated Access",
                 cmd: "policy",
-                desc: "Delegated wallet access with policy-gated signing.",
+                desc: "Delegated wallet access with policy-defined limits before signing.",
               },
               {
                 title: "Policy Trace",
