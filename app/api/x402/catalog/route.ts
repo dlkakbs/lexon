@@ -16,22 +16,10 @@ export async function GET() {
     },
     capabilities: [
       {
-        id: "bridge_quote",
-        status: "planned",
-        route: "/api/x402/paid/bridge-quote",
-        description: "Paid bridge pricing and route intelligence",
-      },
-      {
-        id: "wallet_report",
-        status: "planned",
-        route: "/api/x402/paid/wallet-report",
-        description: "Paid wallet intelligence and portfolio summary",
-      },
-      {
-        id: "token_research",
-        status: "planned",
-        route: "/api/x402/paid/token-research",
-        description: "Paid token and market summary",
+        id: "evaluate_bridge",
+        status: "live",
+        route: "/api/x402/paid/evaluate-bridge",
+        description: "Paid bridge preflight with policy and route evaluation",
       },
       {
         id: "capability_probe",
@@ -42,4 +30,3 @@ export async function GET() {
     ],
   });
 }
-

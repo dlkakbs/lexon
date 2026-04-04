@@ -70,6 +70,19 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/fund` - MoonPay on-ramp
 - `/memory` - saved memory summary
 
+## x402 Capability
+
+Lexon exposes a paid bridge preflight endpoint over x402:
+
+`/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10`
+
+It returns:
+
+- allow or deny
+- matched policy rules
+- route and fee estimate
+- what would execute if approved
+
 ## Notes
 
 - OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.

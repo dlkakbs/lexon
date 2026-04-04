@@ -10,6 +10,7 @@ import { publicClient } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { approveContract, isApprovedContract } from "../contracts";
 import { config } from "../config";
+import { enforceTransactionGuards, requireHighValueConfirmation } from "../guards";
 
 const LIFI_API = "https://li.quest/v1";
 
@@ -112,6 +113,200 @@ async function getQuote(
     throw new Error(err?.message ?? `Li.Fi API error: ${res.status}`);
   }
   return res.json();
+}
+
+export type BridgeEvaluationResult =
+  | {
+      ok: true;
+      requestedAction: string;
+      decision: "allow";
+      matchedRules: string[];
+      confirmationRequired: boolean;
+      route: {
+        tool: string;
+        toAmountMin: string;
+        toToken: string;
+        feeUsd: string;
+      };
+      wouldExecute: {
+        fromChain: string;
+        toChain: string;
+        fromToken: string;
+        toToken: string;
+        amount: string;
+      };
+    }
+  | {
+      ok: false;
+      requestedAction: string;
+      decision: "deny";
+      matchedRules: string[];
+      reason: string;
+      code?: string;
+      details?: Record<string, unknown>;
+    };
+
+function requestedBridgeAction(fromChain: string, toChain: string, fromToken: string, amount: string, toToken?: string) {
+  return `bridge ${amount} ${fromToken.toUpperCase()} from ${fromChain} to ${toChain}${toToken ? ` as ${toToken.toUpperCase()}` : ""}`;
+}
+
+export async function evaluateBridge(
+  fromChain: string,
+  toChain: string,
+  fromToken: string,
+  amount: string,
+  toToken?: string,
+  userId?: number,
+): Promise<BridgeEvaluationResult> {
+  const requestedAction = requestedBridgeAction(fromChain, toChain, fromToken, amount, toToken);
+  const fromChainId = resolveChainId(fromChain);
+  const toChainId = resolveChainId(toChain);
+
+  if (!fromChainId) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: ["allowed_chains"],
+      reason: `Unknown source chain: ${fromChain}`,
+      code: "unknown_source_chain",
+    };
+  }
+
+  if (!toChainId) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: ["allowed_chains"],
+      reason: `Unknown destination chain: ${toChain}`,
+      code: "unknown_destination_chain",
+    };
+  }
+
+  if (fromChainId !== 8453) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: ["allowed_chains"],
+      reason: "Only Base is supported as the source chain.",
+      code: "source_chain_not_supported",
+    };
+  }
+
+  const destinationCaip = `eip155:${toChainId}`;
+  if (!config.allowedChainIds.includes(destinationCaip)) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: ["allowed_chains"],
+      reason: `Destination chain is not allowed by the current policy: ${destinationCaip}`,
+      code: "destination_chain_not_allowed",
+    };
+  }
+
+  const amountNum = parseFloat(amount);
+  const amountUSDC = fromToken.toUpperCase() === "USDC" && Number.isFinite(amountNum) ? amountNum : undefined;
+  const action = {
+    type: "bridge" as const,
+    fromChain,
+    toChain,
+    fromToken,
+    amount,
+    toToken,
+  };
+
+  const confirmation = requireHighValueConfirmation(userId, action, amountUSDC);
+  if (!confirmation.ok) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: confirmation.matchedRules,
+      reason: confirmation.message,
+      code: confirmation.code,
+      details: confirmation.details,
+    };
+  }
+
+  const guard = enforceTransactionGuards({
+    kind: "bridge",
+    amountUSDC,
+  });
+  if (!guard.ok) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: guard.matchedRules,
+      reason: guard.message,
+      code: guard.code,
+      details: guard.details,
+    };
+  }
+
+  const fromSymbol = fromToken.toUpperCase();
+  const toSymbol = (toToken ?? fromToken).toUpperCase();
+  if (!Number.isFinite(amountNum) || amountNum <= 0) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+      reason: `Invalid amount: ${amount}`,
+      code: "invalid_amount",
+    };
+  }
+
+  try {
+    const decimals = tokenDecimals(fromSymbol);
+    const fromAmountRaw = parseUnits(amount, decimals).toString();
+    const fromTokenParam = tokenParam(fromSymbol);
+    const toTokenParam = tokenParam(toSymbol);
+    const fromAddress = getWalletAddress() as `0x${string}`;
+    const quote = await getQuote(fromChainId, toChainId, fromTokenParam, toTokenParam, fromAmountRaw, fromAddress);
+
+    const toDecimals = tokenDecimals(toSymbol);
+    const toAmountMin = quote.estimate?.toAmountMin
+      ? (Number(quote.estimate.toAmountMin) / 10 ** toDecimals).toFixed(toDecimals === 6 ? 2 : 6)
+      : "?";
+    const feeUsd = quote.estimate?.feeCosts
+      ?.reduce((sum: number, f: any) => sum + parseFloat(f.amountUSD ?? "0"), 0)
+      .toFixed(4) ?? "?";
+    const tool = quote.toolDetails?.name ?? quote.tool ?? "Li.Fi";
+
+    return {
+      ok: true,
+      decision: "allow",
+      requestedAction,
+      matchedRules: Array.from(new Set([...confirmation.matchedRules, ...guard.matchedRules, "allowed_chains", "expires_at"])),
+      confirmationRequired: false,
+      route: {
+        tool,
+        toAmountMin,
+        toToken: toSymbol,
+        feeUsd,
+      },
+      wouldExecute: {
+        fromChain,
+        toChain,
+        fromToken: fromSymbol,
+        toToken: toSymbol,
+        amount,
+      },
+    };
+  } catch (err: any) {
+    return {
+      ok: false,
+      decision: "deny",
+      requestedAction,
+      matchedRules: Array.from(new Set([...confirmation.matchedRules, ...guard.matchedRules, "allowed_chains", "expires_at"])),
+      reason: err?.message?.slice(0, 150) || "Bridge evaluation failed",
+      code: "quote_failed",
+    };
+  }
 }
 
 
