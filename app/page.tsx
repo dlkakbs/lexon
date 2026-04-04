@@ -1,6 +1,7 @@
 const TELEGRAM_URL = "https://t.me/lexon_bot";
 const GITHUB_URL   = "https://github.com/dlkakbs/lexon";
 const OWS_URL      = "https://openwallet.sh/";
+const X402_PRICE   = process.env.X402_DEFAULT_PRICE || "$0.01";
 
 export default function Home() {
   return (
@@ -195,7 +196,7 @@ export default function Home() {
             <div className="text-muted">allow/deny · matched rules · route · fee</div>
 
             <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
-            <div className="text-muted">paid via x402</div>
+            <div className="text-muted">paid via x402 · {X402_PRICE}</div>
           </div>
         </div>
       </section>
