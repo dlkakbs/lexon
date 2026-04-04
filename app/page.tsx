@@ -169,16 +169,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Policy trace ── */}
+      {/* ── Live x402 capability ── */}
       <section id="policy" className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-4">
-          <span className="text-muted text-sm">$ </span>
-          <span className="text-green text-sm font-bold">cat POLICY_TRACE.log</span>
-        </div>
         <div className="mb-8">
-          <div className="text-green font-bold text-sm mb-2">Agent can act, but only within visible policy</div>
+          <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
           <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
-            Every request is checked before signing, with full transparency into intent, policy evaluation, decision, and execution.
+            Any agent can call this endpoint and pay via x402.
           </div>
         </div>
         <div className="term-window" style={{ maxWidth: 760 }}>
@@ -186,33 +182,20 @@ export default function Home() {
             <span className="term-dot term-dot-red" />
             <span className="term-dot term-dot-yellow" />
             <span className="term-dot term-dot-green" />
-            <span className="term-title">policy-trace</span>
+            <span className="term-title">evaluate_bridge</span>
           </div>
           <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
-            <div className="text-cyan">requested_action</div>
-            <div className="text-muted">send 80 USDC to saved contact on Base</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>policy_match</div>
-            <div className="text-muted">allowed_chain=base · max_send_usdc=100 · recipient_allowlist=matched</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>decision</div>
-            <div className="text-green">allow</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>executed_action</div>
-            <div className="text-muted">send 80 USDC to 0x742d...d8ab</div>
+            <div className="text-cyan">endpoint</div>
+            <div className="text-muted">/api/x402/paid/evaluate-bridge</div>
 
-            <div style={{ borderTop: "1px solid var(--border-dim)", margin: "14px 0" }} />
+            <div className="text-cyan" style={{ marginTop: 10 }}>input</div>
+            <div className="text-muted">fromChain · toChain · fromToken · amount</div>
 
-            <div className="text-cyan">requested_action</div>
-            <div className="text-muted">send 140 USDC to new address</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>policy_match</div>
-            <div className="text-muted">max_send_usdc=100 · recipient_allowlist=missing · confirmation_threshold=25</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>decision</div>
-            <div className="text-red-400" style={{ color: "#ff7a7a" }}>deny</div>
-            <div className="text-cyan" style={{ marginTop: 10 }}>deny_reason</div>
-            <div className="text-muted">exceeds per-tx limit and recipient is not yet trusted</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>output</div>
+            <div className="text-muted">allow/deny · matched rules · route · fee</div>
 
-            <div style={{ borderTop: "1px solid var(--border-dim)", margin: "14px 0" }} />
-
-            <div className="text-cyan">daily_usage</div>
-            <div className="text-muted">used_today=82 USDC · tx_count=2 · cooldown=clear</div>
+            <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
+            <div className="text-muted">paid via x402</div>
           </div>
         </div>
       </section>
@@ -261,37 +244,6 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Live x402 capability ── */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-8">
-          <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
-          <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
-            Any agent can call this endpoint and pay via x402.
-          </div>
-        </div>
-        <div className="term-window" style={{ maxWidth: 760 }}>
-          <div className="term-titlebar">
-            <span className="term-dot term-dot-red" />
-            <span className="term-dot term-dot-yellow" />
-            <span className="term-dot term-dot-green" />
-            <span className="term-title">evaluate_bridge</span>
-          </div>
-          <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
-            <div className="text-cyan">endpoint</div>
-            <div className="text-muted">/api/x402/paid/evaluate-bridge</div>
-
-            <div className="text-cyan" style={{ marginTop: 10 }}>input</div>
-            <div className="text-muted">fromChain · toChain · fromToken · amount</div>
-
-            <div className="text-cyan" style={{ marginTop: 10 }}>output</div>
-            <div className="text-muted">allow/deny · matched rules · route · fee</div>
-
-            <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
-            <div className="text-muted">paid via x402</div>
           </div>
         </div>
       </section>
