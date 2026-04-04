@@ -1,5 +1,6 @@
 const TELEGRAM_URL = "https://t.me/lexon_bot";
 const GITHUB_URL   = "https://github.com/dlkakbs/lexon";
+const OWS_URL      = "https://openwallet.sh/";
 
 export default function Home() {
   return (
@@ -59,8 +60,15 @@ export default function Home() {
               Your wallet, your limits, your agent.
             </p>
 
-            <div className="fade-in-5 text-sm text-muted" style={{ letterSpacing: "0.04em" }}>
-              Powered by <span className="text-green">OWS</span>
+            <div className="fade-in-5">
+              <a
+                href={OWS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline px-6 py-2 text-sm"
+              >
+                explore ows
+              </a>
             </div>
           </div>
         </div>
