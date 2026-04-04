@@ -639,6 +639,16 @@ async function handleCommand(ctx: Context, override?: string) {
       await ctx.reply(response, { parse_mode: "Markdown" });
       break;
     }
+    case "research_query": {
+      const msg = await ctx.reply("⏳ Paid research capability çağrılıyor...");
+      response = await buyMarketResearch(action.query).catch((err: any) =>
+        `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
+      );
+      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
+        parse_mode: "Markdown",
+      });
+      break;
+    }
     case "bridge": {
       const amount = Number.parseFloat(action.amount);
       const amountUSDC = action.fromToken.toUpperCase() === "USDC" && Number.isFinite(amount) ? amount : undefined;

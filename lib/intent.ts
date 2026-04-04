@@ -12,6 +12,7 @@ export type Action =
   | { type: "wallet_patterns"; address?: string }
   | { type: "positions"; address?: string }
   | { type: "tx_history"; address?: string }
+  | { type: "research_query"; query: string }
   | { type: "bridge"; fromChain: string; toChain: string; fromToken: string; amount: string; toToken?: string }
   | { type: "token_search"; query: string; chain?: string }
   | { type: "help" }
@@ -68,7 +69,11 @@ Triggers: "pozisyon", "positions", "token", "coins", "DeFi pozisyon", "staking",
 {"type":"tx_history","address":"0x..."} or {"type":"tx_history"}
 Triggers: "son işlemler", "transactions", "tx history", "geçmiş işlemler"
 
-13. Cross-chain bridge via Li.Fi (OWS signs):
+13. Paid deep market research via remote x402 capability:
+{"type":"research_query","query":"Base vs Arbitrum stablecoin activity this week"}
+Triggers: "research", "araştır", "compare", "karşılaştır", "market research", "brief", "thesis"
+
+14. Cross-chain bridge via Li.Fi (OWS signs):
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"USDC","amount":"5"}
 {"type":"bridge","fromChain":"base","toChain":"arbitrum","fromToken":"ETH","amount":"0.01"}
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"ETH","amount":"0.01","toToken":"USDC"}
@@ -76,14 +81,14 @@ Triggers: "bridge", "cross-chain", "Polygon'a gönder", "Arbitrum'a ETH gönder"
 fromChain is always "base". fromToken: "ETH" or "USDC". toToken optional (default = same as fromToken).
 Supported toChains: ethereum, polygon, arbitrum, optimism, bnb, avalanche, zksync, linea, scroll, blast, mantle, unichain, sonic, berachain, gnosis, celo
 
-14. Token search / price:
+15. Token search / price:
 {"type":"token_search","query":"PEPE","chain":"base"}
 Triggers: "token bul", "search token", "PEPE nedir", "hangi chain", adres bilmeden token sorgusu
 
-15. Help:
+16. Help:
 {"type":"help"}
 
-16. Unknown:
+17. Unknown:
 {"type":"unknown","message":"Explain what you can't understand in English"}
 
 Rules:
@@ -169,6 +174,9 @@ async function callLLM(systemPrompt: string, userText: string): Promise<string> 
 }
 
 export async function parseIntent(text: string, userContext = ""): Promise<Action> {
+  const deterministic = classifyToolIntent(text);
+  if (deterministic) return deterministic;
+
   try {
     const raw = await callLLM(buildSystemPrompt(userContext), text);
     if (!raw) throw new Error("Empty response");
@@ -179,4 +187,50 @@ export async function parseIntent(text: string, userContext = ""): Promise<Actio
       message: "Komutu anlayamadım. /help yazarak neler yapabileceğimi görebilirsin.",
     };
   }
+}
+
+function classifyToolIntent(text: string): Action | null {
+  const normalized = text.trim();
+  const lower = normalized.toLowerCase();
+  const address = normalized.match(/0x[a-fA-F0-9]{40}/)?.[0];
+
+  const walletScoreHints = [
+    "wallet score",
+    "score wallet",
+    "risk score",
+    "adres skoru",
+    "bu cüzdan güvenli mi",
+    "wallet risk",
+  ];
+  if (walletScoreHints.some((hint) => lower.includes(hint))) {
+    return { type: "wallet_score", address };
+  }
+
+  const walletPatternHints = [
+    "wallet patterns",
+    "recent activity",
+    "son aktiviteler",
+    "bu adres ne yapıyor",
+    "davranış analizi",
+    "wallet activity",
+  ];
+  if (walletPatternHints.some((hint) => lower.includes(hint))) {
+    return { type: "wallet_patterns", address };
+  }
+
+  const researchHints = [
+    "research",
+    "market research",
+    "brief",
+    "thesis",
+    "compare",
+    "karşılaştır",
+    "araştır",
+    "analiz et",
+  ];
+  if (researchHints.some((hint) => lower.includes(hint))) {
+    return { type: "research_query", query: normalized };
+  }
+
+  return null;
 }

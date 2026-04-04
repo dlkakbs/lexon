@@ -108,6 +108,7 @@ The remote endpoint should accept a `q` query parameter and return JSON.
 
 - OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.
 - x402 adds monetizable capabilities and agent payments.
+- Tool-heavy queries are routed deterministically when possible: wallet risk and activity go to Allium, market research goes to a paid x402 research endpoint.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 
 ## License
