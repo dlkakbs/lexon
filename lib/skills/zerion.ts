@@ -126,26 +126,3 @@ export async function getTransactionHistory(address: string): Promise<string> {
     return `❌ İşlemler alınamadı: ${err?.message?.slice(0, 80)}`;
   }
 }
-
-/** 24 saatlik kazanç/kayıp özeti */
-export async function getPnL(address: string): Promise<string> {
-  try {
-    const data = await zerionGet(`/wallets/${address}/portfolio`, { currency: "usd" });
-    const attr = data.data?.attributes;
-    if (!attr) return "❌ PnL verisi alınamadı.";
-
-    const total = attr.total?.positions?.toFixed(2) ?? "?";
-    const abs1d = attr.changes?.absolute_1d?.toFixed(2) ?? "0";
-    const pct1d = attr.changes?.percent_1d?.toFixed(2) ?? "0";
-    const emoji = parseFloat(abs1d) >= 0 ? "📈" : "📉";
-    const sign = parseFloat(abs1d) >= 0 ? "+" : "";
-
-    return (
-      `${emoji} *24s PnL*\n\n` +
-      `Toplam portföy: $${total}\n` +
-      `24s değişim: ${sign}$${abs1d} (%${sign}${pct1d})`
-    );
-  } catch (err: any) {
-    return `❌ PnL alınamadı: ${err?.message?.slice(0, 80)}`;
-  }
-}

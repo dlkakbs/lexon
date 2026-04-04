@@ -58,7 +58,6 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/help` - command list
 - `/wallet` - wallet address
 - `/portfolio` - multi-chain balances
-- `/pnl` - 24h profit and loss
 - `/price` - ETH price
 - `/bridge` - bridge info
 - `/policy` - active limits

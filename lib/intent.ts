@@ -10,7 +10,6 @@ export type Action =
   | { type: "portfolio"; address?: string }
   | { type: "positions"; address?: string }
   | { type: "tx_history"; address?: string }
-  | { type: "pnl"; address?: string }
   | { type: "bridge"; fromChain: string; toChain: string; fromToken: string; amount: string; toToken?: string }
   | { type: "token_search"; query: string; chain?: string }
   | { type: "help" }
@@ -59,11 +58,7 @@ Triggers: "pozisyon", "positions", "token", "coins", "DeFi pozisyon", "staking",
 {"type":"tx_history","address":"0x..."} or {"type":"tx_history"}
 Triggers: "son işlemler", "transactions", "tx history", "geçmiş işlemler"
 
-11. PnL / profit & loss (Zerion):
-{"type":"pnl","address":"0x..."} or {"type":"pnl"}
-Triggers: "pnl", "kar", "zarar", "profit", "kazanç", "bugün ne kadar kazandım/kaybettim"
-
-12. Cross-chain bridge via Li.Fi (OWS signs):
+11. Cross-chain bridge via Li.Fi (OWS signs):
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"USDC","amount":"5"}
 {"type":"bridge","fromChain":"base","toChain":"arbitrum","fromToken":"ETH","amount":"0.01"}
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"ETH","amount":"0.01","toToken":"USDC"}
@@ -71,14 +66,14 @@ Triggers: "bridge", "cross-chain", "Polygon'a gönder", "Arbitrum'a ETH gönder"
 fromChain is always "base". fromToken: "ETH" or "USDC". toToken optional (default = same as fromToken).
 Supported toChains: ethereum, polygon, arbitrum, optimism, bnb, avalanche, zksync, linea, scroll, blast, mantle, unichain, sonic, berachain, gnosis, celo
 
-13. Token search / price:
+12. Token search / price:
 {"type":"token_search","query":"PEPE","chain":"base"}
 Triggers: "token bul", "search token", "PEPE nedir", "hangi chain", adres bilmeden token sorgusu
 
-14. Help:
+13. Help:
 {"type":"help"}
 
-13. Unknown:
+14. Unknown:
 {"type":"unknown","message":"Explain what you can't understand in English"}
 
 Rules:

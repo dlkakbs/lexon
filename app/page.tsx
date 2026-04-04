@@ -10,7 +10,7 @@ export default function Home() {
       <nav style={{ borderBottom: "1px solid var(--border-dim)" }}
         className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-3 fade-in-1">
-          <span className="text-green font-bold text-lg">lexon</span>
+          <span className="text-green font-bold text-xl">lexon</span>
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
           <a href="#features" className="hover:text-green transition-colors">features</a>

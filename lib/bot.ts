@@ -10,7 +10,7 @@ import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./allowlist";
 import { approveContract, unapproveContract, getAllContracts, getUserContracts, TRUSTED_CONTRACTS } from "./contracts";
 import { swapETHtoUSDC, swapUSDCtoETH } from "./actions/swap";
 import { getETHPrice } from "./skills/price";
-import { getPortfolio, getPositions, getTransactionHistory, getPnL } from "./skills/zerion";
+import { getPortfolio, getPositions, getTransactionHistory } from "./skills/zerion";
 import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
 import {
@@ -75,7 +75,6 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 📋 *Komutlar*
 /wallet — Cüzdan adresini göster
 /portfolio — Tüm chain'lerde portföy (Zerion)
-/pnl — 24s kar/zarar
 /price — Anlık ETH fiyatı
 /bridge — Cross-chain bridge bilgisi
 /policy — Aktif OWS policy kuralları
@@ -285,16 +284,6 @@ function registerHandlers(bot: Bot, token: string) {
     const addr = await queryMemory(userId ?? 0, "What is this user's main wallet address? Return only the 0x address or null.").catch(() => null);
     const address = addr?.match(/0x[a-fA-F0-9]{40}/)?.[0] ?? getWalletAddress();
     const result = await getPortfolio(address);
-    await ctx.reply(result, { parse_mode: "Markdown" });
-  });
-
-  // /pnl — 24s kar/zarar
-  bot.command("pnl", async (ctx) => {
-    await ctx.replyWithChatAction("typing");
-    const userId = ctx.from?.id;
-    const addr = await queryMemory(userId ?? 0, "What is this user's main wallet address? Return only the 0x address or null.").catch(() => null);
-    const address = addr?.match(/0x[a-fA-F0-9]{40}/)?.[0] ?? getWalletAddress();
-    const result = await getPnL(address);
     await ctx.reply(result, { parse_mode: "Markdown" });
   });
 
