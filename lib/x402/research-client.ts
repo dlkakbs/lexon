@@ -36,8 +36,15 @@ export async function buyMarketResearch(query: string): Promise<string> {
   const trimmed = query.trim();
   if (!trimmed) return "❌ Araştırma sorusu boş olamaz.";
 
-  const paidFetch = getX402Fetch();
-  const url = buildResearchUrl(trimmed);
+  let paidFetch: typeof fetch;
+  let url: string;
+
+  try {
+    paidFetch = getX402Fetch();
+    url = buildResearchUrl(trimmed);
+  } catch (err: any) {
+    return `❌ Buyer flow hazır değil: ${err?.message?.slice(0, 120) || "Unknown error"}`;
+  }
 
   const res = await paidFetch(url, {
     method: "GET",

@@ -19,7 +19,12 @@ export async function GET() {
         id: "evaluate_bridge",
         status: "live",
         route: "/api/x402/paid/evaluate-bridge",
+        price: getX402DefaultPrice(),
         description: "Paid bridge preflight with policy and route evaluation",
+        inputs: ["fromChain", "toChain", "fromToken", "amount", "toToken?"],
+        returns: ["allow_or_deny", "matched_rules", "route", "fee", "would_execute"],
+        example:
+          "/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10",
       },
     ],
   });

@@ -94,9 +94,15 @@ Set:
 
 `X402_REMOTE_RESEARCH_URL=https://...`
 
+and
+
+`X402_EVM_PRIVATE_KEY=0x...`
+
 Then use:
 
 `/research Base vs Arbitrum stablecoin activity this week`
+
+The remote endpoint should accept a `q` query parameter and return JSON.
 
 ## Notes
 
