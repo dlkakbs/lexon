@@ -113,6 +113,8 @@ Set `TELEGRAM_OWNER_IDS` in `.env.local` to the Telegram user IDs allowed to use
 
 Lexon includes x402 seller and buyer flows.
 
+**Seller:** Routes are wrapped with `withX402` from `@x402/next`. In production, callers must pay before the handler runs. In local dev, the paywall is bypassed so you can test without sending real payments.
+
 Seller capability:
 
 `/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10`
@@ -135,6 +137,8 @@ The research route is included as a demo capability for local development and bu
 ## x402 Buyer
 
 Lexon can also buy remote paid capabilities over x402. The first built-in buyer flow is paid market research.
+
+**Buyer payments go through the same OWS-managed wallet and policy-gated signing flow as regular transactions.** There is no separate private key for x402 — the agent signs EIP-712 typed data via OWS.
 
 Built-in flow:
 
