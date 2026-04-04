@@ -135,7 +135,7 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 /help — Bu menü
 `.trim();
 
-function registerHandlers(bot: Bot, token: string) {
+export function registerHandlers(bot: Bot, token: string) {
   bot.command("start", async (ctx) => {
     await ctx.reply(
       `👋 Hey! I'm *Lexon* — your AI assistant for Base transactions.\n\n` +
