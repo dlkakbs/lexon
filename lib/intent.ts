@@ -3,6 +3,7 @@ import { config } from "./config";
 export type Action =
   | { type: "send"; to: string; amount: string; name?: string }
   | { type: "balance"; address?: string }
+  | { type: "chain_balance"; chain: string; address?: string }
   | { type: "swap_eth_usdc"; amount: string; dex?: string }
   | { type: "swap_usdc_eth"; amount: string; dex?: string }
   | { type: "price" }
@@ -31,6 +32,9 @@ Extract the user's intent and return ONLY valid JSON matching one of these schem
 
 3. Check balance:
 {"type":"balance","address":"0x..."} or {"type":"balance"} for own wallet
+
+3b. Check balance on a specific chain:
+{"type":"chain_balance","chain":"arbitrum","address":"0x..."} or {"type":"chain_balance","chain":"arbitrum"} for own wallet
 
 4. Swap ETH → USDC:
 {"type":"swap_eth_usdc","amount":"0.001","dex":"uniswap_v3"}
@@ -219,6 +223,48 @@ function classifyToolIntent(text: string): Action | null {
   const normalized = text.trim();
   const lower = normalized.toLowerCase();
   const address = normalized.match(/0x[a-fA-F0-9]{40}/)?.[0];
+
+  const chainAliases: Record<string, string> = {
+    arbitrum: "arbitrum",
+    arb: "arbitrum",
+    polygon: "polygon",
+    ethereum: "ethereum",
+    eth: "ethereum",
+    optimism: "optimism",
+    op: "optimism",
+    base: "base",
+    avalanche: "avalanche",
+    avax: "avalanche",
+    linea: "linea",
+    scroll: "scroll",
+    blast: "blast",
+    mantle: "mantle",
+    unichain: "unichain",
+    bnb: "bsc",
+    bsc: "bsc",
+    zksync: "zksync",
+  };
+
+  const chainMatch = Object.entries(chainAliases).find(([alias]) =>
+    lower.includes(` ${alias} `) ||
+    lower.startsWith(`${alias} `) ||
+    lower.endsWith(` ${alias}`) ||
+    lower.includes(`${alias} ağı`) ||
+    lower.includes(`${alias} network`) ||
+    lower.includes(`${alias} chain`)
+  );
+
+  const chainBalanceHints = [
+    "balance on",
+    "bakiyem",
+    "balance",
+    "wallet balance",
+    "how much do i have on",
+    "ne kadar var",
+  ];
+  if (chainMatch && chainBalanceHints.some((hint) => lower.includes(hint))) {
+    return { type: "chain_balance", chain: chainMatch[1], address };
+  }
 
   const walletScoreHints = [
     "wallet score",

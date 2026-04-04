@@ -80,7 +80,7 @@ async function main() {
   console.clear();
   console.log("╔══════════════════════════════════════════╗");
   console.log("║          LEXON — Setup Wizard            ║");
-  console.log("║  DeFi agent powered by OWS + Telegram   ║");
+  console.log("║       Policy-gated wallet operator      ║");
   console.log("╚══════════════════════════════════════════╝");
   console.log();
   console.log("Bu sihirbaz seni adım adım Lexon kurulumuna götürecek.");

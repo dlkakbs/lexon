@@ -9,7 +9,7 @@ import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./allowlist";
 import { approveContract, unapproveContract, getAllContracts, getUserContracts, TRUSTED_CONTRACTS } from "./contracts";
 import { swapETHtoUSDC, swapUSDCtoETH } from "./actions/swap";
 import { getETHPrice } from "./skills/price";
-import { getPortfolio, getPositions, getTransactionHistory } from "./skills/zerion";
+import { getPortfolio, getPositions, getTransactionHistory, getChainBalance } from "./skills/zerion";
 import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
 import { getWalletPatterns, scoreWallet } from "./skills/allium";
@@ -137,6 +137,7 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 📋 *Komutlar*
 /wallet — Cüzdan adresini göster
 /portfolio — Tüm chain'lerde portföy (Zerion)
+/chainbalance <chain> — belirli ağdaki bakiye
 /scorewallet — Base wallet risk/activity score
 /walletpatterns — Base wallet activity summary
 /price — Anlık ETH fiyatı
@@ -178,6 +179,7 @@ const KNOWN_COMMANDS = new Set([
   "fund",
   "list",
   "portfolio",
+  "chainbalance",
   "scorewallet",
   "walletpatterns",
   "price",
@@ -423,6 +425,21 @@ export function registerHandlers(bot: Bot, token: string) {
     const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
     const address = await resolveTargetAddress(ctx, explicit);
     const result = await getPortfolio(address);
+    await ctx.reply(result, { parse_mode: "Markdown" });
+  });
+
+  bot.command("chainbalance", async (ctx) => {
+    if (!(await requireOwner(ctx, "/chainbalance"))) return;
+    await ctx.replyWithChatAction("typing");
+    const text = ctx.message?.text ?? "";
+    const chain = text.split(" ").slice(1).join(" ").trim().toLowerCase();
+    if (!chain) {
+      await ctx.reply("Kullanım: `/chainbalance arbitrum`", { parse_mode: "Markdown" });
+      return;
+    }
+    const explicit = text.match(/0x[a-fA-F0-9]{40}/)?.[0];
+    const address = await resolveTargetAddress(ctx, explicit);
+    const result = await getChainBalance(address, chain);
     await ctx.reply(result, { parse_mode: "Markdown" });
   });
 
@@ -682,6 +699,12 @@ async function handleCommand(ctx: Context, override?: string) {
     case "balance": {
       const address = action.address || getWalletAddress();
       response = await checkBalance(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
+      break;
+    }
+    case "chain_balance": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await getChainBalance(address, action.chain);
       await ctx.reply(response, { parse_mode: "Markdown" });
       break;
     }

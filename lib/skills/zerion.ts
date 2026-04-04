@@ -55,6 +55,37 @@ export async function getPortfolio(address: string): Promise<string> {
   }
 }
 
+export async function getChainBalance(address: string, chainQuery: string): Promise<string> {
+  try {
+    const data = await zerionGet(`/wallets/${address}/portfolio`, { currency: "usd" });
+    const attr = data.data?.attributes;
+    if (!attr) return "❌ Portföy verisi alınamadı.";
+
+    const byChain = attr.positions_distribution_by_chain ?? {};
+    const entries = Object.entries(byChain) as Array<[string, number]>;
+    const query = chainQuery.toLowerCase();
+    const match = entries.find(([chain]) => chain.toLowerCase().includes(query));
+
+    if (!match) {
+      const known = entries
+        .filter(([, value]) => value > 0.01)
+        .map(([chain]) => chain)
+        .slice(0, 8)
+        .join(", ");
+      return `❌ ${chainQuery} için bakiye bulunamadı.\n\nGörünen ağlar: ${known || "yok"}`;
+    }
+
+    const [chain, value] = match;
+    return (
+      `🌐 *Chain Balance*\n` +
+      `\`${address.slice(0, 6)}...${address.slice(-4)}\`\n\n` +
+      `*${chain}*: $${value.toFixed(2)}`
+    );
+  } catch (err: any) {
+    return `❌ Chain balance alınamadı: ${err?.message?.slice(0, 80)}`;
+  }
+}
+
 /** Token pozisyonlarını listeler */
 export async function getPositions(address: string): Promise<string> {
   try {
