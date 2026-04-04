@@ -81,4 +81,7 @@ export const config = {
   // MoonPay
   moonpayApiKey: process.env.MOONPAY_API_KEY || "",
   moonpayWalletName: process.env.MOONPAY_WALLET_NAME || "lexon-wallet",
+
+  // x402 buyer
+  remoteResearchUrl: process.env.X402_REMOTE_RESEARCH_URL || "",
 };

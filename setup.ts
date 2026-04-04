@@ -270,6 +270,10 @@ async function main() {
   info("https://app.allium.so → Realtime APIs");
   const alliumKey = await askSecret("ALLIUM_API_KEY (boş bırakılabilir)");
 
+  step(7, TOTAL, "Remote x402 research URL — opsiyonel");
+  info("Lexon'un x402 ile satın alacağı ücretli research capability endpoint'i");
+  const remoteResearchUrl = await ask("X402_REMOTE_RESEARCH_URL (boş bırakılabilir)", "");
+
   // ── 7. .env.local yaz ─────────────────────────────────────────────────────
   step(7, TOTAL, ".env.local dosyası oluşturuluyor");
 
@@ -326,6 +330,9 @@ HONCHO_API_KEY=${honchoKey}
 
 # Allium (wallet intelligence)
 ALLIUM_API_KEY=${alliumKey}
+
+# x402 buyer (remote research capability)
+X402_REMOTE_RESEARCH_URL=${remoteResearchUrl}
 `;
 
   const envPath = path.join(process.cwd(), ".env.local");

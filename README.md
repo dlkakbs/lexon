@@ -67,6 +67,7 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/policy` - active limits
 - `/audit` - recent policy decisions
 - `/catalog` - x402 capability catalog
+- `/research <query>` - buy paid market research over x402
 - `/fund` - MoonPay on-ramp
 - `/memory` - saved memory summary
 
@@ -84,6 +85,18 @@ It returns:
 - what would execute if approved
 
 Any agent can call this endpoint and pay via x402.
+
+## x402 Buyer
+
+Lexon can also buy a remote paid research capability over x402.
+
+Set:
+
+`X402_REMOTE_RESEARCH_URL=https://...`
+
+Then use:
+
+`/research Base vs Arbitrum stablecoin activity this week`
 
 ## Notes
 

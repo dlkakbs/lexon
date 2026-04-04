@@ -15,6 +15,7 @@ import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
 import { getWalletPatterns, scoreWallet } from "./skills/allium";
 import { extractTxHash, formatPolicyTraceSummary, logPolicyTrace } from "./policy-trace";
+import { buyMarketResearch } from "./x402/research-client";
 import {
   enforceTransactionGuards,
   getGuardUsageSummary,
@@ -115,6 +116,7 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 /policy — Aktif OWS policy kuralları
 /audit — Son policy kararları ve günlük özet
 /catalog — x402 capability catalog linki
+/research <soru> — x402 ile ücretli research capability satın al
 
 👥 *Gönderim Listesi*
 /add <adres> [isim] — Gönderim listesine ekle
@@ -183,6 +185,24 @@ function registerHandlers(bot: Bot, token: string) {
       `• monetizable capabilities over x402`,
       { parse_mode: "Markdown" }
     );
+  });
+
+  bot.command("research", async (ctx) => {
+    const query = (ctx.message?.text ?? "").split(" ").slice(1).join(" ").trim();
+    if (!query) {
+      await ctx.reply("Kullanım: `/research Base ve Arbitrum stablecoin activity son 7 gün`", {
+        parse_mode: "Markdown",
+      });
+      return;
+    }
+
+    const msg = await ctx.reply("⏳ Ücretli research capability çağrılıyor...");
+    const result = await buyMarketResearch(query).catch((err: any) =>
+      `❌ Research capability çağrısı başarısız: ${err?.message?.slice(0, 120) || "Unknown error"}`
+    );
+    await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, result, {
+      parse_mode: "Markdown",
+    });
   });
 
   bot.command("audit", async (ctx) => {
