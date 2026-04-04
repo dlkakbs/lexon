@@ -85,7 +85,7 @@ export default function Home() {
             { n: "01", title: "Natural input", desc: "Send a message via Telegram, voice, or call the Lexon API as an agent." },
             { n: "02", title: "Intent to capability routing", desc: "Lexon interprets the request and routes it to an execution action or a capability endpoint." },
             { n: "03", title: "OWS delegated access", desc: "OWS gives the agent delegated wallet access and evaluates policy-defined limits and constraints before signing." },
-            { n: "04", title: "Payment (x402, optional)", desc: "For external calls, Lexon can require payment via x402 so capabilities become monetizable APIs." },
+            { n: "04", title: "Payment (x402)", desc: "Lexon can sell its own capabilities or pay remote agent endpoints over x402." },
             { n: "05", title: "On-chain execution", desc: "If approved, the transaction is signed via OWS, broadcast to Base, and a receipt is returned." },
             { n: "06", title: "Audit and transparency", desc: "Every action produces decision logs, denial reasons when relevant, and usage summaries." },
           ].map((s) => (
@@ -175,7 +175,7 @@ export default function Home() {
         <div className="mb-8">
           <div className="text-green font-bold text-sm mb-2">Live x402 Capability</div>
           <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.8, maxWidth: 640 }}>
-            Any agent can call this endpoint and pay via x402.
+            Lexon can expose paid capabilities for other agents and buy remote capabilities when it needs external intelligence.
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
@@ -216,7 +216,7 @@ export default function Home() {
               <div className="text-muted">/research &lt;query&gt;</div>
 
               <div className="text-cyan" style={{ marginTop: 10 }}>flow</div>
-              <div className="text-muted">call remote endpoint · pay via x402 · return result</div>
+              <div className="text-muted">call remote endpoint · pay via x402 · return normalized result</div>
 
               <div className="text-cyan" style={{ marginTop: 10 }}>use case</div>
               <div className="text-muted">paid deep market research from remote agent endpoints</div>

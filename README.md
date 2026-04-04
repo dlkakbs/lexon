@@ -88,7 +88,7 @@ Any agent can call this endpoint and pay via x402.
 
 ## x402 Buyer
 
-Lexon can also buy a remote paid research capability over x402.
+Lexon can also buy remote paid capabilities over x402. The first built-in buyer flow is paid market research.
 
 Set:
 
@@ -107,7 +107,7 @@ The remote endpoint should accept a `q` query parameter and return JSON.
 ## Notes
 
 - OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.
-- x402 adds monetizable capabilities and agent payments.
+- x402 adds both seller and buyer capability flows for agents.
 - Tool-heavy queries are routed deterministically when possible: wallet risk and activity go to Allium, market research goes to a paid x402 research endpoint.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 

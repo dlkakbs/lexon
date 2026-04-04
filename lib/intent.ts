@@ -201,6 +201,10 @@ function classifyToolIntent(text: string): Action | null {
     "adres skoru",
     "bu cüzdan güvenli mi",
     "wallet risk",
+    "riskli mi",
+    "şüpheli mi",
+    "suspicious wallet",
+    "wallet safety",
   ];
   if (walletScoreHints.some((hint) => lower.includes(hint))) {
     return { type: "wallet_score", address };
@@ -213,6 +217,10 @@ function classifyToolIntent(text: string): Action | null {
     "bu adres ne yapıyor",
     "davranış analizi",
     "wallet activity",
+    "activity summary",
+    "wallet behavior",
+    "onchain pattern",
+    "onchain davranış",
   ];
   if (walletPatternHints.some((hint) => lower.includes(hint))) {
     return { type: "wallet_patterns", address };
@@ -224,9 +232,16 @@ function classifyToolIntent(text: string): Action | null {
     "brief",
     "thesis",
     "compare",
+    "compare protocols",
+    "protocol compare",
     "karşılaştır",
     "araştır",
     "analiz et",
+    "market update",
+    "market outlook",
+    "sentiment",
+    "news brief",
+    "narrative",
   ];
   if (researchHints.some((hint) => lower.includes(hint))) {
     return { type: "research_query", query: normalized };
