@@ -177,7 +177,7 @@ For demo/testing, Lexon also includes a local research capability.
                    each Lexon executes independently
                                   │
                    private dashboard for each Lexon instance
-
+ ``` 
   ## License
 
   MIT
