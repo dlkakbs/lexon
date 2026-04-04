@@ -99,7 +99,7 @@ async function main() {
   const telegramOwnerIds = await ask("TELEGRAM_OWNER_IDS (comma-separated Telegram user IDs)", "");
 
   // ── 2. OpenRouter ─────────────────────────────────────────────────────────
-  step(2, TOTAL, "OpenRouter API Key (intent parsing için Claude)");
+  step(2, TOTAL, "OpenRouter API Key (intent parsing)");
   info("https://openrouter.ai → API Keys → Create Key");
   const openrouterKey = await askSecret("OPENROUTER_API_KEY");
   if (!openrouterKey) { warn("OpenRouter key zorunlu!"); process.exit(1); }
@@ -233,7 +233,7 @@ async function main() {
   step(6, TOTAL, "AI Model seçimi");
   info("Hangi provider'ı kullanmak istiyorsun?");
   console.log("  1) openrouter  — 200+ model, tek key (önerilen)");
-  console.log("  2) anthropic   — Claude direkt API");
+  console.log("  2) anthropic   — Anthropic API");
   console.log("  3) openai      — GPT-4o / GPT-4o-mini");
   console.log();
   const providerChoice = await ask("Provider (1/2/3)", "1");
