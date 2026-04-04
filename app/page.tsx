@@ -10,7 +10,6 @@ export default function Home() {
         className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-3 fade-in-1">
           <span className="text-green font-bold text-lg">lexon</span>
-          <span className="text-muted text-sm">v2.0.0</span>
           <span className="tag tag-green">live</span>
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
@@ -20,9 +19,9 @@ export default function Home() {
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
             className="hover:text-green transition-colors">github</a>
         </div>
-        <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
+        <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
           className="btn-green px-5 py-2 text-sm fade-in-3">
-          $ open telegram
+          github
         </a>
       </nav>
 
@@ -56,7 +55,7 @@ export default function Home() {
               <span style={{ color: "var(--text)" }}>DeFi agent.</span>
             </h1>
 
-            <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 480, marginBottom: "2rem" }}>
+            <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 480, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
               Send USDC · swap tokens · bridge cross-chain · track portfolio.
               All via Telegram, text or voice. Policy-gated by OWS.
               Your wallet, your limits, your agent.
@@ -85,13 +84,12 @@ export default function Home() {
         </div>
         <div className="grid md:grid-cols-4 gap-4">
           {[
-            { n: "01", title: "Text or voice",       desc: "Send a Telegram message or voice note in any language — Whisper handles the rest." },
-            { n: "02", title: "AI parses intent",    desc: "Claude (OpenRouter / Anthropic / OpenAI) extracts the action from natural language." },
-            { n: "03", title: "OWS policy gates signing", desc: "Declarative rules check chain + expiry. Custom executable checks USDC amount, ETH value, and contract allowlist — key material never touched if denied." },
-            { n: "04", title: "On-chain, done",      desc: "Transaction broadcast to Base. Basescan link returned instantly." },
+            { n: "01", title: "Text or Voice",       desc: "Send a Telegram message or voice note in any language." },
+            { n: "02", title: "From message to action", desc: "Lexon understands what you want and maps it to an on-chain action." },
+            { n: "03", title: "OWS enforces policy", desc: "Your rules validate the transaction before anything is signed." },
+            { n: "04", title: "On-chain execution",  desc: "Transaction broadcast to Base with instant receipt." },
           ].map((s) => (
             <div key={s.n} className="term-card">
-              <div className="text-muted text-xs mb-4" style={{ letterSpacing: "0.1em" }}>STEP_{s.n}</div>
               <div className="text-green font-bold text-sm mb-2">{s.title}</div>
               <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.7 }}>{s.desc}</div>
             </div>
@@ -110,166 +108,57 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
-                tag: "transfer", tagColor: "tag-green",
                 title: "Send USDC",
                 cmd: "send",
                 desc: "Send to an address or saved contact.",
               },
               {
-                tag: "defi", tagColor: "tag-green",
                 title: "Swap",
                 cmd: "swap",
                 desc: "ETH ↔ USDC on Base.",
               },
               {
-                tag: "bridge", tagColor: "tag-cyan",
                 title: "Bridge",
                 cmd: "bridge",
                 desc: "Bridge from Base to 17+ chains.",
               },
               {
-                tag: "data", tagColor: "tag-cyan",
                 title: "Portfolio",
                 cmd: "portfolio",
                 desc: "Multi-chain balances and PnL.",
               },
               {
-                tag: "security", tagColor: "tag-yellow",
                 title: "Policy",
                 cmd: "policy",
                 desc: "Chain, spend, and contract controls.",
               },
               {
-                tag: "voice", tagColor: "tag-green",
                 title: "Voice",
                 cmd: "voice",
                 desc: "Speak instead of typing.",
               },
               {
-                tag: "ai", tagColor: "tag-yellow",
                 title: "Memory",
                 cmd: "memory",
                 desc: "Saved contacts and habits.",
               },
               {
-                tag: "onramp", tagColor: "tag-green",
                 title: "MoonPay",
                 cmd: "on-ramp",
                 desc: "Optional USDC on-ramp.",
               },
               {
-                tag: "x402", tagColor: "tag-yellow",
                 title: "x402",
                 cmd: "catalog",
                 desc: "Optional paid capabilities.",
               },
             ].map((f) => (
               <div key={f.title} className="term-card">
-                <div className="flex items-start justify-between mb-3">
-                  <span className={`tag ${f.tagColor}`}>{f.tag}</span>
-                </div>
                 <div className="text-green font-bold text-sm mb-1">{f.title}</div>
                 <div className="text-cyan" style={{ fontSize: 11, marginBottom: 8, opacity: 0.8 }}>
                   &gt; {f.cmd}
                 </div>
                 <div className="text-muted" style={{ fontSize: 12, lineHeight: 1.65 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── OWS Policy ── */}
-      <section id="policy" className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-10">
-          <span className="text-muted text-sm">$ </span>
-          <span className="text-green text-sm font-bold">cat .env.local | grep OWS</span>
-        </div>
-        <div className="grid md:grid-cols-2 gap-6">
-
-          <div className="term-window">
-            <div className="term-titlebar">
-              <span className="term-dot term-dot-red" />
-              <span className="term-dot term-dot-yellow" />
-              <span className="term-dot term-dot-green" />
-              <span className="term-title">lexon-policy.json</span>
-            </div>
-            <div className="term-body" style={{ fontSize: 12 }}>
-              <div className="text-muted">{"{"}</div>
-              <div style={{ paddingLeft: 16 }}>
-                <div><span className="text-cyan">&quot;id&quot;</span>: <span className="text-yellow">&quot;lexon-policy&quot;</span>,</div>
-                <div><span className="text-cyan">&quot;action&quot;</span>: <span className="text-yellow">&quot;deny&quot;</span>,</div>
-                <div style={{ marginTop: 6 }}><span className="text-muted">// declarative rules — evaluated in-process</span></div>
-                <div><span className="text-cyan">&quot;rules&quot;</span>: [</div>
-                <div style={{ paddingLeft: 16 }}>
-                  {[
-                    ["allowed_chains", "eip155:8453 + 12 more  <- OWS native"],
-                    ["expires_at",     "2027-01-01              <- OWS native"],
-                  ].map(([rule, val]) => (
-                    <div key={rule} style={{ marginBottom: 2 }}>
-                      <span className="text-green">&quot;{rule}&quot;</span>
-                      <span className="text-muted"> → </span>
-                      <span style={{ color: "var(--text)", opacity: 0.8 }}>{val}</span>
-                    </div>
-                  ))}
-                </div>
-                <div>],</div>
-                <div style={{ marginTop: 6 }}><span className="text-muted">// custom executable — runs after declarative rules pass</span></div>
-                <div><span className="text-cyan">&quot;executable&quot;</span>: <span className="text-yellow">&quot;policy/spend_limit.js&quot;</span>,</div>
-                <div><span className="text-cyan">&quot;config&quot;</span>: {"{"}</div>
-                <div style={{ paddingLeft: 16 }}>
-                  {[
-                    ["max_usdc_per_tx",    "$100  ERC-20 data decoded"],
-                    ["max_eth_per_tx_wei", "0.05 ETH  transaction.value"],
-                    ["max_daily_eth_wei",  "0.1 ETH   spending.daily_total"],
-                    ["trusted_contracts",  "Uniswap · Aerodrome · Li.Fi"],
-                    ["contracts_file",     "data/contracts.json  (live read)"],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ marginBottom: 2 }}>
-                      <span className="text-green">&quot;{k}&quot;</span>
-                      <span className="text-muted"> → </span>
-                      <span style={{ color: "var(--text)", opacity: 0.8 }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-                <div>{"}"}</div>
-              </div>
-              <div className="text-muted">{"}"}</div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div className="text-muted text-xs mb-1" style={{ letterSpacing: "0.08em" }}>OWS ENFORCES VIA EXECUTABLE</div>
-            {[
-              { env: "MAX_SEND_USDC",     default: "100",  desc: "USDC per-tx cap (ERC-20 data decoded)", tag: "OWS" },
-              { env: "OWS_MAX_ETH_PER_TX",default: "0.05", desc: "ETH per-tx cap (transaction.value wei)", tag: "OWS" },
-              { env: "OWS_ALLOWED_CHAINS",default: "13",   desc: "Chain allowlist (declarative rule)", tag: "OWS" },
-            ].map((r) => (
-              <div key={r.env} className="term-card" style={{ padding: "9px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span className="text-cyan" style={{ fontSize: 11, fontWeight: 700 }}>{r.env}</span>
-                    <span className="tag tag-green" style={{ fontSize: 9 }}>{r.tag}</span>
-                  </div>
-                  <div className="text-muted" style={{ fontSize: 11 }}>{r.desc}</div>
-                </div>
-                <div style={{ fontSize: 13, color: "var(--green)", fontWeight: 700 }}>{r.default}</div>
-              </div>
-            ))}
-            <div className="text-muted text-xs mt-2 mb-1" style={{ letterSpacing: "0.08em" }}>APP-LAYER GUARDS (OWS daily_total tracks ETH only, not ERC-20)</div>
-            {[
-              { env: "MAX_DAILY_USDC",            default: "100", desc: "USDC daily cap" },
-              { env: "OWS_MAX_TX_PER_DAY",        default: "20",  desc: "Transaction count limit" },
-              { env: "OWS_COOLDOWN_SECONDS",      default: "30",  desc: "Seconds between transactions" },
-              { env: "OWS_MAX_PER_ADDRESS_DAILY", default: "50",  desc: "Max per recipient per day" },
-              { env: "OWS_CONFIRM_ABOVE_USDC",    default: "25",  desc: "Confirmation threshold" },
-            ].map((r) => (
-              <div key={r.env} className="term-card" style={{ padding: "9px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div className="text-cyan" style={{ fontSize: 11, fontWeight: 700 }}>{r.env}</div>
-                  <div className="text-muted" style={{ fontSize: 11 }}>{r.desc}</div>
-                </div>
-                <div style={{ fontSize: 13, color: "var(--green)", fontWeight: 700 }}>{r.default}</div>
               </div>
             ))}
           </div>
@@ -302,17 +191,13 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {[
-                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "native: chain allowlist + expiry; app-layer: spend guards" },
-                    { mod: "@x402/next · @x402/fetch",   role: "Optional Commerce Layer",    note: "paid capability rails when you want agent-to-agent payments" },
-                    { mod: "Li.Fi REST API",             role: "Cross-chain Bridge",        note: "17+ EVM chains, no API key needed" },
-                    { mod: "@honcho-ai/sdk",             role: "Personalized Memory",       note: "User habits, named contacts, spending history" },
-                    { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
-                    { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Multi-provider: openrouter | anthropic | openai" },
-                    { mod: "OpenAI Whisper",             role: "Voice Transcription",       note: "Telegram voice note → text, any language" },
-                    { mod: "MoonPay",                   role: "USDC On-Ramp",              note: "/fund command, direct into OWS wallet" },
-                    { mod: "viem",                      role: "Base Client",               note: "TX construction, USDC helpers, Uniswap ABI" },
-                    { mod: "grammy",                    role: "Telegram Bot Framework",    note: "Webhook + polling mode" },
-                    { mod: "next.js",                   role: "Landing + Webhook API",     note: "App router, /api/webhook route" },
+                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "OWS access control and transaction signing" },
+                    { mod: "Li.Fi REST API",             role: "Bridge",                    note: "Cross-chain routing from Base" },
+                    { mod: "Zerion REST API",            role: "Portfolio",                 note: "Balances, positions, and PnL" },
+                    { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Natural language to action" },
+                    { mod: "OpenAI Whisper",             role: "Voice Input",               note: "Voice note transcription" },
+                    { mod: "grammy",                    role: "Telegram Bot",              note: "Webhook + bot command handling" },
+                    { mod: "@x402/next · @x402/fetch",   role: "Optional x402",             note: "Paid capabilities when enabled" },
                   ].map((r) => (
                     <tr key={r.mod}>
                       <td><span className="text-green" style={{ fontSize: 12 }}>{r.mod}</span></td>
