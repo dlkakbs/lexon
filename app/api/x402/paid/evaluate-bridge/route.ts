@@ -28,19 +28,19 @@ const handler = async (request: NextRequest): Promise<NextResponse<any>> => {
   });
 };
 
-const paidGet = withX402(
-  handler,
-  createPaidRouteConfig("Lexon paid bridge preflight"),
-  getX402Server(),
-  undefined,
-  undefined,
-  false,
-);
-
 export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV !== "production") {
     return handler(request);
   }
+
+  const paidGet = withX402(
+    handler,
+    createPaidRouteConfig("Lexon paid bridge preflight"),
+    getX402Server(),
+    undefined,
+    undefined,
+    false,
+  );
 
   return paidGet(request);
 }
