@@ -164,7 +164,7 @@ For demo/testing, Lexon also includes a local research capability.
 ## Next Step: XMPT (Trusted agentic messaging) 
  ## Multi-Agent Coordination
 
- ```text
+  ```text
   Lexon A (OWS wallet: 0xAAA)          Lexon B (OWS wallet: 0xBBB)
             │                                     │
             └────────── XMTP Group Layer ─────────┘
@@ -178,6 +178,8 @@ For demo/testing, Lexon also includes a local research capability.
                                   │
                    private dashboard for each Lexon instance
 
-## License
+  ## License
 
-MIT
+  MIT
+
+
