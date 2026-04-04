@@ -220,18 +220,6 @@ export default function Home() {
                 desc: "View holdings, positions, and 24h PnL across all chains where your address has assets — powered by Zerion.",
               },
               {
-                tag: "ai", tagColor: "tag-yellow",
-                title: "Personalized Memory",
-                cmd: '"How much did I spend this week?"',
-                desc: "Honcho remembers your habits, named addresses, and spending history across sessions.",
-              },
-              {
-                tag: "voice", tagColor: "tag-green",
-                title: "Voice Commands",
-                cmd: "Send a voice note",
-                desc: "OpenAI Whisper transcribes voice notes in any language. Any command works via voice.",
-              },
-              {
                 tag: "security", tagColor: "tag-yellow",
                 title: "OWS Policy Engine",
                 cmd: "/policy",
@@ -266,6 +254,18 @@ export default function Home() {
                 title: "Self-Hosted",
                 cmd: "npx tsx setup.ts",
                 desc: "Interactive wizard configures all keys and limits. Your instance, your OWS wallet, your policy.",
+              },
+              {
+                tag: "voice", tagColor: "tag-green",
+                title: "Voice Commands",
+                cmd: "Send a voice note",
+                desc: "Optional voice input via Whisper. Any supported command can be spoken instead of typed.",
+              },
+              {
+                tag: "ai", tagColor: "tag-yellow",
+                title: "Personalized Memory",
+                cmd: '"How much did I spend this week?"',
+                desc: "Optional memory layer for named contacts, spending history, and repeated behavior.",
               },
               {
                 tag: "x402", tagColor: "tag-yellow",
