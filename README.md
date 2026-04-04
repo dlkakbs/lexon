@@ -31,12 +31,31 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - x402 for monetizable capabilities
 - Next.js and grammy for the app and bot
 
+## How OWS Works Here
+
+OWS is the wallet and policy layer. The agent never holds keys directly — it requests signing through OWS, which validates each transaction against user-defined rules before it signs.
+
+Two modes:
+
+- **Agent mode** (`OWS_API_KEY` set) — every transaction goes through the policy executable before signing. This is the intended production mode.
+- **Owner mode** (empty key) — policy is bypassed. Development only.
+
+The policy runs as a custom executable (`policy/spend_limit.js`). OWS pipes a `PolicyContext` to it before every signing operation. The executable checks:
+
+- Contract allowlist — only pre-approved DEXes and bridges
+- USDC per-tx cap — decoded from ERC-20 calldata
+- ETH per-tx cap — checked against the raw transaction value
+- Daily ETH cap — using OWS-native `spending.daily_total`
+
+Users can approve additional contracts at runtime via `/approve` without restarting or re-registering the policy. The executable reads `data/contracts.json` live on each evaluation.
+
 ## Quick Start
 
 ```bash
 git clone https://github.com/dlkakbs/lexon
 cd lexon
 npm install
+cp .env.example .env.local   # fill in your keys
 npx tsx setup.ts
 ```
 
