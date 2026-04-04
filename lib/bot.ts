@@ -13,6 +13,7 @@ import { getETHPrice } from "./skills/price";
 import { getPortfolio, getPositions, getTransactionHistory } from "./skills/zerion";
 import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
+import { getWalletPatterns, scoreWallet } from "./skills/allium";
 import {
   enforceTransactionGuards,
   recordSuccessfulTransaction,
@@ -29,6 +30,16 @@ import {
 
 function isSuccessfulResponse(response: string): boolean {
   return response.startsWith("✅");
+}
+
+async function resolveTargetAddress(ctx: Context, explicit?: string) {
+  if (explicit?.match(/^0x[a-fA-F0-9]{40}$/)) return explicit;
+  const userId = ctx.from?.id;
+  const remembered = await queryMemory(
+    userId ?? 0,
+    "What is this user's main wallet address? Return only the 0x address or null."
+  ).catch(() => null);
+  return remembered?.match(/0x[a-fA-F0-9]{40}/)?.[0] ?? getWalletAddress();
 }
 
 const HELP_TEXT = `
@@ -75,6 +86,8 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 📋 *Komutlar*
 /wallet — Cüzdan adresini göster
 /portfolio — Tüm chain'lerde portföy (Zerion)
+/scorewallet — Base wallet risk/activity score
+/walletpatterns — Base wallet activity summary
 /price — Anlık ETH fiyatı
 /bridge — Cross-chain bridge bilgisi
 /policy — Aktif OWS policy kuralları
@@ -278,12 +291,26 @@ function registerHandlers(bot: Bot, token: string) {
 
   // /portfolio — Zerion multi-chain portföy
   bot.command("portfolio", async (ctx) => {
-    const userId = ctx.from?.id;
     await ctx.replyWithChatAction("typing");
-    const userCtx = userId ? await getUserContext(userId) : "";
-    const addr = await queryMemory(userId ?? 0, "What is this user's main wallet address? Return only the 0x address or null.").catch(() => null);
-    const address = addr?.match(/0x[a-fA-F0-9]{40}/)?.[0] ?? getWalletAddress();
+    const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
+    const address = await resolveTargetAddress(ctx, explicit);
     const result = await getPortfolio(address);
+    await ctx.reply(result, { parse_mode: "Markdown" });
+  });
+
+  bot.command("scorewallet", async (ctx) => {
+    await ctx.replyWithChatAction("typing");
+    const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
+    const address = await resolveTargetAddress(ctx, explicit);
+    const result = await scoreWallet(address);
+    await ctx.reply(result, { parse_mode: "Markdown" });
+  });
+
+  bot.command("walletpatterns", async (ctx) => {
+    await ctx.replyWithChatAction("typing");
+    const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
+    const address = await resolveTargetAddress(ctx, explicit);
+    const result = await getWalletPatterns(address);
     await ctx.reply(result, { parse_mode: "Markdown" });
   });
 
@@ -469,6 +496,36 @@ async function handleCommand(ctx: Context, override?: string) {
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
         parse_mode: "Markdown",
       });
+      break;
+    }
+    case "portfolio": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await getPortfolio(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
+      break;
+    }
+    case "positions": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await getPositions(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
+      break;
+    }
+    case "tx_history": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await getTransactionHistory(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
+      break;
+    }
+    case "wallet_score": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await scoreWallet(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
+      break;
+    }
+    case "wallet_patterns": {
+      const address = await resolveTargetAddress(ctx, action.address);
+      response = await getWalletPatterns(address);
+      await ctx.reply(response, { parse_mode: "Markdown" });
       break;
     }
     case "bridge": {

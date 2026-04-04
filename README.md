@@ -12,9 +12,10 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Swap ETH and USDC on Base
 - Bridge from Base to 10+ EVM chains
 - View multi-chain balances
+- Score a Base wallet and inspect recent patterns
 - Use text or voice in Telegram
 - Apply OWS-based chain, spend, and contract controls
-- Add optional memory, MoonPay, and x402 capability support
+- Add optional memory, wallet intelligence, MoonPay, and x402 capability support
 
 ## Stack
 
@@ -22,6 +23,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Base for execution
 - Li.Fi for bridging
 - Zerion for portfolio data
+- Allium for wallet activity and Base intelligence
 - OpenRouter, Anthropic, or OpenAI for intent parsing
 - Whisper for voice transcription
 - Honcho for optional memory
@@ -58,6 +60,8 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/help` - command list
 - `/wallet` - wallet address
 - `/portfolio` - multi-chain balances
+- `/scorewallet` - Base wallet activity score
+- `/walletpatterns` - Base wallet patterns
 - `/price` - ETH price
 - `/bridge` - bridge info
 - `/policy` - active limits

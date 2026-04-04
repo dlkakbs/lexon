@@ -266,6 +266,10 @@ async function main() {
   info("https://app.honcho.dev → $100 ücretsiz kredi");
   const honchoKey = await askSecret("HONCHO_API_KEY (boş bırakılabilir)");
 
+  step(7, TOTAL, "Allium API Key (wallet intelligence) — opsiyonel");
+  info("https://app.allium.so → Realtime APIs");
+  const alliumKey = await askSecret("ALLIUM_API_KEY (boş bırakılabilir)");
+
   // ── 7. .env.local yaz ─────────────────────────────────────────────────────
   step(7, TOTAL, ".env.local dosyası oluşturuluyor");
 
@@ -319,6 +323,9 @@ ZERION_API_KEY=${zerionKey}
 
 # Honcho (personalized memory)
 HONCHO_API_KEY=${honchoKey}
+
+# Allium (wallet intelligence)
+ALLIUM_API_KEY=${alliumKey}
 `;
 
   const envPath = path.join(process.cwd(), ".env.local");

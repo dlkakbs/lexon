@@ -8,6 +8,8 @@ export type Action =
   | { type: "price" }
   | { type: "spending_summary" }
   | { type: "portfolio"; address?: string }
+  | { type: "wallet_score"; address?: string }
+  | { type: "wallet_patterns"; address?: string }
   | { type: "positions"; address?: string }
   | { type: "tx_history"; address?: string }
   | { type: "bridge"; fromChain: string; toChain: string; fromToken: string; amount: string; toToken?: string }
@@ -50,15 +52,23 @@ Triggers: "ne harcadım", "harcama", "spending", "history", "geçmiş"
 {"type":"portfolio","address":"0x..."} or {"type":"portfolio"} for own wallet
 Triggers: "portföy", "portfolio", "varlıklarım", "assets", "holdings", "show my wallet"
 
-9. Token positions (Zerion):
+9. Wallet score on Base (Allium):
+{"type":"wallet_score","address":"0x..."} or {"type":"wallet_score"}
+Triggers: "score wallet", "wallet score", "risk score", "bu cüzdan güvenli mi", "adres skoru"
+
+10. Wallet patterns on Base (Allium):
+{"type":"wallet_patterns","address":"0x..."} or {"type":"wallet_patterns"}
+Triggers: "wallet patterns", "recent activity", "bu adres ne yapıyor", "son aktiviteler", "davranış analizi"
+
+11. Token positions (Zerion):
 {"type":"positions","address":"0x..."} or {"type":"positions"}
 Triggers: "pozisyon", "positions", "token", "coins", "DeFi pozisyon", "staking", "LP"
 
-10. Transaction history across chains (Zerion):
+12. Transaction history across chains (Zerion):
 {"type":"tx_history","address":"0x..."} or {"type":"tx_history"}
 Triggers: "son işlemler", "transactions", "tx history", "geçmiş işlemler"
 
-11. Cross-chain bridge via Li.Fi (OWS signs):
+13. Cross-chain bridge via Li.Fi (OWS signs):
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"USDC","amount":"5"}
 {"type":"bridge","fromChain":"base","toChain":"arbitrum","fromToken":"ETH","amount":"0.01"}
 {"type":"bridge","fromChain":"base","toChain":"polygon","fromToken":"ETH","amount":"0.01","toToken":"USDC"}
@@ -66,14 +76,14 @@ Triggers: "bridge", "cross-chain", "Polygon'a gönder", "Arbitrum'a ETH gönder"
 fromChain is always "base". fromToken: "ETH" or "USDC". toToken optional (default = same as fromToken).
 Supported toChains: ethereum, polygon, arbitrum, optimism, bnb, avalanche, zksync, linea, scroll, blast, mantle, unichain, sonic, berachain, gnosis, celo
 
-12. Token search / price:
+14. Token search / price:
 {"type":"token_search","query":"PEPE","chain":"base"}
 Triggers: "token bul", "search token", "PEPE nedir", "hangi chain", adres bilmeden token sorgusu
 
-13. Help:
+15. Help:
 {"type":"help"}
 
-14. Unknown:
+16. Unknown:
 {"type":"unknown","message":"Explain what you can't understand in English"}
 
 Rules:

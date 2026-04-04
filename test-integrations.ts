@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Lexon entegrasyon testi — Zerion ve Honcho bağlantısını kontrol eder.
+ * Lexon entegrasyon testi — Zerion, Honcho ve Allium bağlantısını kontrol eder.
  * Çalıştır: npx tsx test-integrations.ts
  */
 
@@ -44,6 +44,39 @@ async function testHoncho() {
     console.log("  ✅ Honcho çalışıyor! (mesaj yazıldı)");
   } catch (err: any) {
     console.log(`  ❌ Honcho hatası: ${err?.message?.slice(0, 100)}`);
+  }
+}
+
+async function testAllium() {
+  console.log("\n🧠 Allium testi...");
+  const key = process.env.ALLIUM_API_KEY;
+  if (!key) { console.log("  ❌ ALLIUM_API_KEY eksik"); return; }
+
+  try {
+    const res = await fetch("https://api.allium.so/api/v1/developer/wallet/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": key,
+      },
+      body: JSON.stringify([
+        {
+          chain: "base",
+          address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        },
+      ]),
+    });
+
+    if (!res.ok) {
+      console.log(`  ❌ HTTP ${res.status} — key geçersiz veya endpoint erişimi yok`);
+      return;
+    }
+
+    const data = await res.json();
+    const count = Array.isArray(data.items) ? data.items.length : 0;
+    console.log(`  ✅ Allium çalışıyor! (Base tx kaydı: ${count})`);
+  } catch (err: any) {
+    console.log(`  ❌ Allium hatası: ${err?.message?.slice(0, 100)}`);
   }
 }
 
@@ -93,6 +126,7 @@ async function main() {
   await testOpenRouter();
   await testZerion();
   await testHoncho();
+  await testAllium();
   await testLiFi();
 
   console.log("\n" + "─".repeat(36));

@@ -200,6 +200,7 @@ export default function Home() {
                     { mod: "@open-wallet-standard/core", role: "Wallet · Agent Access · Policy · Signing", note: "Local wallet management, scoped agent access, policy validation, and transaction signing" },
                     { mod: "Li.Fi REST API",             role: "Bridge",                    note: "Cross-chain routing from Base" },
                     { mod: "Zerion REST API",            role: "Portfolio",                 note: "Balances, positions, and PnL" },
+                    { mod: "Allium Realtime API",        role: "Wallet Intelligence",       note: "Base wallet activity, scoring, and behavior patterns" },
                     { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Natural language to action" },
                     { mod: "OpenAI Whisper",             role: "Voice Input",               note: "Voice note transcription" },
                     { mod: "grammy",                    role: "Telegram Bot",              note: "Webhook + bot command handling" },
