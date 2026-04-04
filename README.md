@@ -161,7 +161,22 @@ For demo/testing, Lexon also includes a local research capability.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 - Wallet, admin, and paid buyer flows should be restricted with `TELEGRAM_OWNER_IDS`.
 
-NEXT STEP: XMPT (Trusted agentic messaging) 
+## Next Step: XMPT (Trusted agentic messaging) 
+ ## Multi-Agent Coordination
+
+ ```text
+  Lexon A (OWS wallet: 0xAAA)          Lexon B (OWS wallet: 0xBBB)
+            │                                     │
+            └────────── XMTP Group Layer ─────────┘
+                       coordination
+                       capability discovery
+                       x402 service exchange
+                       shared planning
+                                  │
+                local OWS policy + x402 + onchain execution
+                   each Lexon executes independently
+                                  │
+                   private dashboard for each Lexon instance
 
 ## License
 
