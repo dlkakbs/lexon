@@ -33,7 +33,7 @@ export default function Home() {
             </div>
 
             <h1 className="fade-in-3 glow" style={{
-              fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+              fontSize: "clamp(1.95rem, 4.2vw, 3rem)",
               fontWeight: 700,
               lineHeight: 1.1,
               letterSpacing: "-0.02em",
