@@ -161,6 +161,8 @@ For demo/testing, Lexon also includes a local research capability.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 - Wallet, admin, and paid buyer flows should be restricted with `TELEGRAM_OWNER_IDS`.
 
+NEXT STEP: XMPT (Trusted agentic messaging) 
+
 ## License
 
 MIT
