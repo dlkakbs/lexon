@@ -94,22 +94,20 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 
 ## x402 Capability
 
-Lexon exposes a live paid bridge preflight capability over x402.
+Lexon includes x402 seller and buyer flows.
+
+Seller capability:
 
 `/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10`
 
-and a paid research capability:
-
-`/api/x402/paid/research?q=base%20stablecoin%20activity%20this%20week`
-
-It returns:
+This returns:
 
 - allow or deny
 - matched policy rules
 - route and fee estimate
 - what would execute if approved
 
-Any agent can call this endpoint and pay via x402.
+The research route is included as a demo capability for local development and buyer-flow testing. It should not be treated as the main public seller surface.
 
 ## x402 Buyer
 
@@ -135,7 +133,7 @@ For local testing, run the web app too:
 npm run dev
 ```
 
-In local development, paid x402 routes fall back to direct responses so you can test buyer and seller flows without a live facilitator. Production keeps the x402 paywall enabled.
+In local development, the research capability is treated as a demo route so buyer-flow testing works without a live facilitator. For real agent-to-agent purchases, point `X402_REMOTE_RESEARCH_URL` at an actual paid remote capability.
 
 ## Notes
 
