@@ -275,18 +275,14 @@ export default function Home() {
           Run your own DeFi agent.
         </h2>
         <p style={{ color: "var(--muted)", fontSize: 15, marginBottom: 36, lineHeight: 1.8 }}>
-          Open Telegram. Type or speak. Watch it settle on Base.<br />
-          Self-host it, set the limits, keep the wallet under control.
+          Type or speak via Telegram, or call it via API.<br />
+          Lexon executes on Base — fully self-hosted, policy-controlled, and transparent.
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
-          <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
             className="btn-green px-10 py-4 text-sm flex items-center gap-2">
             <TelegramIcon />
-            open telegram
-          </a>
-          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
-            className="btn-outline px-10 py-4 text-sm">
-            self-host →
+            github
           </a>
         </div>
       </section>
