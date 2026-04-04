@@ -282,7 +282,7 @@ export default function Home() {
         </div>
         <h2 style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 700, color: "var(--green)", letterSpacing: "-0.02em", marginBottom: 16 }}
           className="glow">
-          Run your own DeFi agent.
+          Run your own policy-gated wallet operator.
         </h2>
         <p style={{ color: "var(--muted)", fontSize: 15, marginBottom: 36, lineHeight: 1.8 }}>
           Type or speak via Telegram, or call it via API.<br />
