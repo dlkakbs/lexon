@@ -8,14 +8,14 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 ## What It Does
 
-- Send USDC to an address or saved contact
+- Send USDC on Base
 - Swap ETH and USDC on Base
-- Bridge from Base to 10+ EVM chains
-- View multi-chain balances
-- Score a Base wallet and inspect recent patterns
-- Use text or voice in Telegram
-- Apply delegated wallet access with OWS-based chain, spend, and contract controls
-- Add memory, wallet intelligence, MoonPay, and monetizable capabilities over x402
+- Bridge from Base to supported chains
+- View wallet balances and activity
+- Score Base wallets and inspect patterns
+- Run through Telegram with text or voice
+- Enforce delegated wallet access with OWS before signing
+- Expose and buy monetizable capabilities over x402
 
 ## Stack
 
