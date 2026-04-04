@@ -86,7 +86,7 @@ async function main() {
   console.log("Bu sihirbaz seni adım adım Lexon kurulumuna götürecek.");
   console.log("Her adımda Enter'a basarak varsayılan değeri kabul edebilirsin.");
 
-  const TOTAL = 7;
+  const TOTAL = 8;
 
   // ── 1. Telegram ──────────────────────────────────────────────────────────
   step(1, TOTAL, "Telegram Bot Token");
@@ -94,6 +94,7 @@ async function main() {
   info("https://t.me/BotFather");
   const telegramToken = await askSecret("TELEGRAM_BOT_TOKEN");
   if (!telegramToken) { warn("Telegram token zorunlu!"); process.exit(1); }
+  const telegramOwnerIds = await ask("TELEGRAM_OWNER_IDS (comma-separated Telegram user IDs)", "");
 
   // ── 2. OpenRouter ─────────────────────────────────────────────────────────
   step(2, TOTAL, "OpenRouter API Key (intent parsing için Claude)");
@@ -281,6 +282,7 @@ async function main() {
 
   const envContent = `# Telegram
 TELEGRAM_BOT_TOKEN=${telegramToken}
+TELEGRAM_OWNER_IDS=${telegramOwnerIds}
 
 # AI Model
 AI_PROVIDER=${aiProvider}

@@ -82,6 +82,12 @@ export const config = {
   moonpayApiKey: process.env.MOONPAY_API_KEY || "",
   moonpayWalletName: process.env.MOONPAY_WALLET_NAME || "lexon-wallet",
 
+  // Telegram owners / admins
+  telegramOwnerIds: (process.env.TELEGRAM_OWNER_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+
   // x402 buyer
   remoteResearchUrl: process.env.X402_REMOTE_RESEARCH_URL || "",
 };

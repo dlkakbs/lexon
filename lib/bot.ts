@@ -1,7 +1,6 @@
 import { Bot, Context, webhookCallback } from "grammy";
-import { exec } from "child_process";
 import { config } from "./config";
-import { generateChatReply, parseIntent } from "./intent";
+import { generateChatReply, parseIntent, type Action } from "./intent";
 import { transcribeVoice } from "./voice";
 import { sendUSDC } from "./actions/send";
 import { checkBalance } from "./actions/balance";
@@ -63,6 +62,35 @@ async function resolveTargetAddress(ctx: Context, explicit?: string) {
     "What is this user's main wallet address? Return only the 0x address or null."
   ).catch(() => null);
   return remembered?.match(/0x[a-fA-F0-9]{40}/)?.[0] ?? getWalletAddress();
+}
+
+function hasOwnerConfig(): boolean {
+  return config.telegramOwnerIds.length > 0;
+}
+
+function isOwner(ctx: Context): boolean {
+  const userId = ctx.from?.id;
+  return Boolean(userId && config.telegramOwnerIds.includes(String(userId)));
+}
+
+async function requireOwner(ctx: Context, capability: string): Promise<boolean> {
+  if (!hasOwnerConfig()) {
+    await ctx.reply(
+      `🔒 \`${capability}\` için owner yetkisi gerekli.\n\nÖnce \`TELEGRAM_OWNER_IDS\` ayarlamalısın.`,
+      { parse_mode: "Markdown" }
+    );
+    return false;
+  }
+
+  if (!isOwner(ctx)) {
+    await ctx.reply(
+      `⛔ Bu işlem sadece bot owner'ı için açık: \`${capability}\``,
+      { parse_mode: "Markdown" }
+    );
+    return false;
+  }
+
+  return true;
 }
 
 const HELP_TEXT = `
@@ -131,7 +159,6 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 ⚙️ *Diğer*
 /fund — MoonPay ile USDC al
 /memory — Lexon'ın seni ne kadar tanıdığını gör
-/update — Son sürüme güncelle
 /help — Bu menü
 `.trim();
 
@@ -150,6 +177,7 @@ export function registerHandlers(bot: Bot, token: string) {
   });
 
   bot.command("wallet", async (ctx) => {
+    if (!(await requireOwner(ctx, "/wallet"))) return;
     try {
       const address = getWalletAddress();
       await ctx.reply(
@@ -188,6 +216,7 @@ export function registerHandlers(bot: Bot, token: string) {
   });
 
   bot.command("research", async (ctx) => {
+    if (!(await requireOwner(ctx, "/research"))) return;
     const query = (ctx.message?.text ?? "").split(" ").slice(1).join(" ").trim();
     if (!query) {
       await ctx.reply("Kullanım: `/research Base ve Arbitrum stablecoin activity son 7 gün`", {
@@ -206,11 +235,13 @@ export function registerHandlers(bot: Bot, token: string) {
   });
 
   bot.command("audit", async (ctx) => {
+    if (!(await requireOwner(ctx, "/audit"))) return;
     await ctx.reply(formatPolicyTraceSummary(), { parse_mode: "Markdown" });
   });
 
   // /add 0x... İsim — gönderim allowlist'i
   bot.command("add", async (ctx) => {
+    if (!(await requireOwner(ctx, "/add"))) return;
     const parts = (ctx.message?.text ?? "").split(" ").slice(1);
     const address = parts[0];
     const label = parts.slice(1).join(" ") || "Kişisel";
@@ -224,6 +255,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /approve 0x... İsim — OWS policy contract whitelist
   bot.command("approve", async (ctx) => {
+    if (!(await requireOwner(ctx, "/approve"))) return;
     const parts = (ctx.message?.text ?? "").split(" ").slice(1);
     const address = parts[0];
     const label = parts.slice(1).join(" ") || "Contract";
@@ -241,6 +273,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /unapprove 0x... — OWS policy contract listesinden çıkar
   bot.command("unapprove", async (ctx) => {
+    if (!(await requireOwner(ctx, "/unapprove"))) return;
     const address = (ctx.message?.text ?? "").split(" ")[1];
     if (!address?.startsWith("0x")) {
       await ctx.reply("Kullanım: `/unapprove 0x...`", { parse_mode: "Markdown" });
@@ -256,6 +289,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /contracts — onaylı contract listesi
   bot.command("contracts", async (ctx) => {
+    if (!(await requireOwner(ctx, "/contracts"))) return;
     const trusted = Object.entries(TRUSTED_CONTRACTS);
     const user = Object.entries(getUserContracts());
 
@@ -277,6 +311,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /allow 0x123... MyFriend
   bot.command("allow", async (ctx) => {
+    if (!(await requireOwner(ctx, "/allow"))) return;
     const parts = (ctx.message?.text ?? "").split(" ").slice(1);
     const address = parts[0];
     const label = parts.slice(1).join(" ") || "Personal";
@@ -295,6 +330,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /remove 0x123...
   bot.command("remove", async (ctx) => {
+    if (!(await requireOwner(ctx, "/remove"))) return;
     const address = (ctx.message?.text ?? "").split(" ")[1];
     if (!address || !address.startsWith("0x")) {
       await ctx.reply("Usage: `/remove 0x...`", { parse_mode: "Markdown" });
@@ -310,6 +346,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /fund
   bot.command("fund", async (ctx) => {
+    if (!(await requireOwner(ctx, "/fund"))) return;
     const address = getWalletAddress();
     const moonpayUrl =
       `https://buy.moonpay.com?` +
@@ -329,6 +366,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /list
   bot.command("list", async (ctx) => {
+    if (!(await requireOwner(ctx, "/list"))) return;
     const all = getAllowlist();
     const entries = Object.entries(all);
     if (entries.length === 0) {
@@ -346,6 +384,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /portfolio — Zerion multi-chain portföy
   bot.command("portfolio", async (ctx) => {
+    if (!(await requireOwner(ctx, "/portfolio"))) return;
     await ctx.replyWithChatAction("typing");
     const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
     const address = await resolveTargetAddress(ctx, explicit);
@@ -354,6 +393,7 @@ export function registerHandlers(bot: Bot, token: string) {
   });
 
   bot.command("scorewallet", async (ctx) => {
+    if (!(await requireOwner(ctx, "/scorewallet"))) return;
     await ctx.replyWithChatAction("typing");
     const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
     const address = await resolveTargetAddress(ctx, explicit);
@@ -362,6 +402,7 @@ export function registerHandlers(bot: Bot, token: string) {
   });
 
   bot.command("walletpatterns", async (ctx) => {
+    if (!(await requireOwner(ctx, "/walletpatterns"))) return;
     await ctx.replyWithChatAction("typing");
     const explicit = (ctx.message?.text ?? "").match(/0x[a-fA-F0-9]{40}/)?.[0];
     const address = await resolveTargetAddress(ctx, explicit);
@@ -397,6 +438,7 @@ export function registerHandlers(bot: Bot, token: string) {
 
   // /policy — aktif OWS policy kurallarını göster
   bot.command("policy", async (ctx) => {
+    if (!(await requireOwner(ctx, "/policy"))) return;
     await ctx.reply(
       `🛡 *OWS Policy — Aktif Kurallar*\n\n` +
       `💸 Max gönderim: $${config.maxSendUSDC} USDC/işlem\n` +
@@ -412,30 +454,9 @@ export function registerHandlers(bot: Bot, token: string) {
     );
   });
 
-  // /update — son sürüme güncelle
-  bot.command("update", async (ctx) => {
-    const msg = await ctx.reply("🔄 Güncelleme kontrol ediliyor...");
-    exec("git pull && npm install --silent", { cwd: process.cwd() }, async (err, stdout, stderr) => {
-      const output = (stdout || stderr || "").trim().slice(0, 600);
-      if (err && !stdout.includes("up to date") && !stdout.includes("Already up to date")) {
-        await ctx.api.editMessageText(ctx.chat!.id, msg.message_id,
-          `❌ Güncelleme başarısız:\n\`\`\`\n${output}\n\`\`\``,
-          { parse_mode: "Markdown" }
-        );
-        return;
-      }
-      const isUpToDate = stdout.includes("up to date") || stdout.includes("Already up to date");
-      await ctx.api.editMessageText(ctx.chat!.id, msg.message_id,
-        isUpToDate
-          ? `✅ Lexon zaten güncel.`
-          : `✅ *Güncellendi!*\n\n\`\`\`\n${output}\n\`\`\`\n\n⚠️ Değişikliklerin aktif olması için botu yeniden başlat:\n\`Ctrl+C → npx tsx dev-bot.ts\``,
-        { parse_mode: "Markdown" }
-      );
-    });
-  });
-
   // /memory — kullanıcının Honcho'daki profilini göster
   bot.command("memory", async (ctx) => {
+    if (!(await requireOwner(ctx, "/memory"))) return;
     const userId = ctx.from?.id;
     if (!userId) return;
     await ctx.replyWithChatAction("typing");
@@ -476,6 +497,25 @@ async function handleCommand(ctx: Context, override?: string) {
   // Kullanıcı bağlamını Honcho'dan al (intent parsing'e ekle)
   const userContext = userId ? await getUserContext(userId) : "";
   const action = await parseIntent(text, userContext);
+
+  const ownerOnlyActions = new Set<Action["type"]>([
+    "send",
+    "balance",
+    "spending_summary",
+    "portfolio",
+    "wallet_score",
+    "wallet_patterns",
+    "positions",
+    "tx_history",
+    "research_query",
+    "bridge",
+    "swap_eth_usdc",
+    "swap_usdc_eth",
+  ]);
+
+  if (ownerOnlyActions.has(action.type) && !(await requireOwner(ctx, action.type))) {
+    return;
+  }
 
   let response = "";
 

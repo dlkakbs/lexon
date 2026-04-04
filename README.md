@@ -46,6 +46,8 @@ Then run the bot:
 npx tsx dev-bot.ts
 ```
 
+Set `TELEGRAM_OWNER_IDS` in `.env.local` to the Telegram user IDs allowed to use wallet, admin, and paid buyer flows.
+
 To deploy the web app:
 
 ```bash
@@ -110,6 +112,7 @@ The remote endpoint should accept a `q` query parameter and return JSON.
 - x402 adds both seller and buyer capability flows for agents.
 - Tool-heavy queries are routed deterministically when possible: wallet risk and activity go to Allium, market research goes to a paid x402 research endpoint.
 - Policy enforcement is strongest in agent mode with an OWS API key.
+- Wallet, admin, and paid buyer flows should be restricted with `TELEGRAM_OWNER_IDS`.
 
 ## License
 
