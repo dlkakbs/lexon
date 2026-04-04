@@ -89,5 +89,9 @@ export const config = {
     .filter(Boolean),
 
   // x402 buyer
-  remoteResearchUrl: process.env.X402_REMOTE_RESEARCH_URL || "",
+  remoteResearchUrl:
+    process.env.X402_REMOTE_RESEARCH_URL ||
+    (process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/x402/paid/research`
+      : ""),
 };

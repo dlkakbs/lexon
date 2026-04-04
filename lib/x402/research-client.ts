@@ -46,12 +46,17 @@ export async function buyMarketResearch(query: string): Promise<string> {
     return `❌ Buyer flow hazır değil: ${err?.message?.slice(0, 120) || "Unknown error"}`;
   }
 
-  const res = await paidFetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  });
+  let res: Response;
+  try {
+    res = await paidFetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+  } catch (err: any) {
+    return `❌ Research capability'ye ulaşılamadı: ${err?.message?.slice(0, 160) || "Unknown error"}`;
+  }
 
   if (!res.ok) {
     return `❌ Research capability çağrısı başarısız: HTTP ${res.status}`;

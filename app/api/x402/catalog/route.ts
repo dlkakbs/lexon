@@ -26,6 +26,17 @@ export async function GET() {
         example:
           "/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10",
       },
+      {
+        id: "research",
+        status: "live",
+        route: "/api/x402/paid/research",
+        price: getX402DefaultPrice(),
+        description: "Paid market research brief for agents",
+        inputs: ["q"],
+        returns: ["title", "summary", "highlights"],
+        example:
+          "/api/x402/paid/research?q=base%20stablecoin%20activity%20this%20week",
+      },
     ],
   });
 }

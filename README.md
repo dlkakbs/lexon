@@ -97,6 +97,10 @@ Lexon exposes a live paid bridge preflight capability over x402.
 
 `/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10`
 
+and a paid research capability:
+
+`/api/x402/paid/research?q=base%20stablecoin%20activity%20this%20week`
+
 It returns:
 
 - allow or deny
@@ -119,6 +123,16 @@ Then use:
 `/research Base vs Arbitrum stablecoin activity this week`
 
 The remote endpoint should accept a `q` query parameter and return JSON.
+
+If `X402_REMOTE_RESEARCH_URL` is not set, Lexon falls back to:
+
+`NEXT_PUBLIC_APP_URL/api/x402/paid/research`
+
+For local testing, run the web app too:
+
+```bash
+npm run dev
+```
 
 ## Notes
 
