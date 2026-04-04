@@ -16,8 +16,6 @@ export default function Home() {
           <a href="#features" className="hover:text-green transition-colors">features</a>
           <a href="#policy"   className="hover:text-green transition-colors">policy</a>
           <a href="#stack"    className="hover:text-green transition-colors">stack</a>
-          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
-            className="hover:text-green transition-colors">github</a>
         </div>
         <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
           className="btn-green px-5 py-2 text-sm fade-in-3">
@@ -61,16 +59,8 @@ export default function Home() {
               Your wallet, your limits, your agent.
             </p>
 
-            <div className="flex flex-wrap gap-3 justify-center fade-in-5">
-              <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
-                className="btn-green px-7 py-3 text-sm flex items-center gap-2">
-                <TelegramIcon />
-                $ start lexon
-              </a>
-              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
-                className="btn-outline px-7 py-3 text-sm">
-                git clone
-              </a>
+            <div className="fade-in-5 text-sm text-muted" style={{ letterSpacing: "0.04em" }}>
+              Powered by <span className="text-green">OWS</span>
             </div>
           </div>
         </div>
@@ -304,8 +294,7 @@ export default function Home() {
                   <span className="term-title">terminal</span>
                 </div>
                 <div className="term-body" style={{ fontSize: 12 }}>
-                  <div className="prompt text-green">git clone github.com/dlkakbs/lexon</div>
-                  <div className="prompt text-green">cd lexon && npm install</div>
+                  <div className="prompt text-green">npm install</div>
                   <div className="prompt text-green">npx tsx setup.ts</div>
                   <div className="text-muted" style={{ fontSize: 11, margin: "8px 0" }}>
                     interactive wizard —<br />
@@ -342,7 +331,7 @@ export default function Home() {
           <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
             className="btn-green px-10 py-4 text-sm flex items-center gap-2">
             <TelegramIcon />
-            $ start lexon
+            open telegram
           </a>
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
             className="btn-outline px-10 py-4 text-sm">

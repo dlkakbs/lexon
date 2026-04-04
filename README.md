@@ -1,83 +1,35 @@
 # Lexon
 
-**Self-hosted, policy-gated DeFi agent on Base — text or voice.**
+Self-hosted, policy-gated DeFi agent on Base.
 
-Lexon is a Telegram bot that lets you send USDC, swap tokens, bridge cross-chain, and monitor your portfolio using plain language. Each person runs their own instance with their own OWS wallet and custom policy limits.
+Lexon is a Telegram bot that lets you send USDC, swap, bridge, and track your portfolio with plain language. Each user runs their own instance with their own OWS wallet and their own limits.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
----
+## What It Does
 
-## OWS + Extensions
-
-Lexon's core product is a **self-hosted DeFi agent**. OWS is the security layer: it gives the agent a wallet and enforces spend rules before signing.
-
-In short:
-
-- **OWS** = agent wallet + spend controls
-- **x402** = optional agent-to-agent payments
-
-Lexon works fine as a self-hosted DeFi agent even without x402. The x402 layer is optional, not the core product.
-
----
-
-## How it works
-
-```
-User types or speaks → Whisper transcribes voice → Claude parses intent
-       ↓
-Honcho recalls user preferences + spending history
-       ↓
-OWS policy-gated wallet signs transaction (spend limits enforced)
-       ↓
-Transaction executes on Base mainnet
-```
-
----
-
-## Features
-
-| Feature | Description |
-|---|---|
-| 💸 Send USDC | "Send 5 USDC to 0x742d..." or "Ali'ye 2 USDC gönder" |
-| 🔄 Swap | ETH ↔ USDC via Uniswap V3, Universal Router, or Aerodrome |
-| 🌉 Cross-chain Bridge | 17+ EVM chains via Li.Fi + OWS signing |
-| 📊 Portfolio | Multi-chain portfolio, positions, PnL via Zerion |
-| 💰 Balance | Native ETH + USDC balance on Base |
-| 🎙 Voice commands | Send a Telegram voice note — Whisper transcribes it |
-| 🧠 Personalized Memory | Honcho remembers your habits, named addresses, spending patterns |
-| 🛡 OWS Policy | 8 configurable spend rules: per-tx, daily, cooldown, contract whitelist |
-| 💳 MoonPay on-ramp | Fund wallet without leaving Telegram |
-| ⚙️ Self-hosted | Run your own instance — your keys, your wallet, your limits |
-| 💸 Optional x402 layer | Add paid capability exchange if you want it |
-
----
+- Send USDC to an address or saved contact
+- Swap ETH and USDC on Base
+- Bridge from Base to 17+ EVM chains
+- View multi-chain portfolio and PnL
+- Use text or voice in Telegram
+- Apply OWS-based chain, spend, and contract controls
+- Add optional memory, MoonPay, and x402 capability support
 
 ## Stack
 
-| Tool | Role |
-|---|---|
-| **[OWS](https://docs.openwallet.sh/)** | Wallet management + policy-gated signing (8 rules) |
-| **[x402](https://docs.x402.org/)** | Optional paid capability layer |
-| **[Base](https://base.org/)** | L2 network — native USDC, fast finality |
-| **[Claude](https://openrouter.ai/)** via OpenRouter / Anthropic / OpenAI | Intent parsing from natural language |
-| **[Whisper](https://openai.com/research/whisper)** | Voice note transcription |
-| **[Honcho](https://honcho.dev/)** | Personalized memory — user habits, named addresses, spending history |
-| **[Zerion](https://zerion.io/)** | Multi-chain portfolio, positions, PnL, transaction history |
-| **[Li.Fi](https://li.fi/)** | Cross-chain bridge — 17+ EVM chains, OWS-signed txs |
-| **[MoonPay](https://www.moonpay.com/)** | USDC on-ramp via `/fund` |
-| **[Uniswap V3](https://uniswap.org/)** | ETH ↔ USDC swaps (SwapRouter02) |
-| **[Uniswap Universal Router](https://uniswap.org/)** | Multi-hop swap routing |
-| **[Aerodrome](https://aerodrome.finance/)** | Base-native DEX, alternative swap routing |
-| **[viem](https://viem.sh/)** | Transaction construction and broadcasting |
-| **[grammy](https://grammy.dev/)** | Telegram bot framework |
-| **[Next.js](https://nextjs.org/)** | Landing page + Telegram webhook API route |
-
----
+- OWS for wallet access and policy-gated signing
+- Base for execution
+- Li.Fi for bridging
+- Zerion for portfolio data
+- OpenRouter, Anthropic, or OpenAI for intent parsing
+- Whisper for voice transcription
+- Honcho for optional memory
+- MoonPay for optional on-ramp
+- x402 for optional paid capabilities
+- Next.js and grammy for the app and bot
 
 ## Quick Start
-
-### Option A: Interactive setup wizard
 
 ```bash
 git clone https://github.com/dlkakbs/lexon
@@ -86,236 +38,39 @@ npm install
 npx tsx setup.ts
 ```
 
-The wizard walks you through every setting — API keys, wallet name, spend limits, AI model — and writes `.env.local` for you.
-
-### Option B: Manual setup
-
-**1. Clone & install**
-
-```bash
-git clone https://github.com/dlkakbs/lexon
-cd lexon
-npm install
-```
-
-**2. Create OWS wallet + policy + API key**
-
-```bash
-# Create wallet
-ows wallet create --name lexon-wallet
-
-# Register spend policy (declarative: chain allowlist + expiry)
-ows policy create --file policy/spend_limit_policy.json
-
-# Create API key — attach wallet + policy
-# This token goes into OWS_API_KEY in .env.local
-ows key create --name lexon-agent --wallet lexon-wallet --policy lexon-policy
-```
-
-> The setup wizard (`npx tsx setup.ts`) does all of this automatically.
-
-**3. Configure environment**
-
-```bash
-cp .env.local.example .env.local
-```
-
-Fill in `.env.local`:
-
-```env
-# Required
-TELEGRAM_BOT_TOKEN=        # from @BotFather
-OPENROUTER_API_KEY=        # openrouter.ai (default AI provider)
-OPENAI_API_KEY=            # for Whisper voice transcription
-OWS_WALLET_NAME=lexon-wallet
-BASE_RPC_URL=https://mainnet.base.org
-
-# OWS API Key — REQUIRED for policy enforcement
-# Generated by setup.ts. Agent mode: policy enforced. Empty: owner mode (no policy).
-OWS_API_KEY=ows_key_...
-
-# Optional — enhanced features
-HONCHO_API_KEY=             # honcho.dev — personalized memory
-ZERION_API_KEY=             # zerion.io — multi-chain portfolio data
-MOONPAY_API_KEY=            # moonpay.com — on-ramp
-
-# AI model (default: openrouter + Claude Sonnet)
-AI_PROVIDER=openrouter      # openrouter | anthropic | openai
-AI_MODEL=anthropic/claude-sonnet-4-6
-
-# Spend limits
-# OWS custom executable enforces: USDC per-tx, ETH per-tx, contract allowlist
-# App-layer enforces: USDC daily cap, tx count, cooldown, per-address daily
-MAX_SEND_USDC=100           # USDC per-tx cap  → OWS executable
-OWS_MAX_ETH_PER_TX=0.05     # ETH per-tx cap   → OWS executable (~$100)
-MAX_DAILY_USDC=100          # USDC daily cap   → app-layer
-MAX_SWAP_USD=100            # max swap value in USD
-OWS_MAX_TX_PER_DAY=20       # tx count limit   → app-layer
-OWS_COOLDOWN_SECONDS=30     # seconds between tx → app-layer
-OWS_MAX_PER_ADDRESS_DAILY=50 # per-address daily → app-layer
-OWS_CONFIRM_ABOVE_USDC=25   # confirmation threshold
-OWS_POLICY_EXPIRY=2027-01-01T00:00:00Z
-
-# Supported chains (OWS eip155 format — used in allowed_chains declarative rule)
-OWS_ALLOWED_CHAINS=eip155:8453,eip155:1,eip155:137,eip155:42161,eip155:10
-
-# Extra contract whitelist (comma-separated, Uniswap/Aerodrome/Li.Fi already trusted)
-# OWS_ALLOWED_CONTRACTS=0x...
-```
-
-**4. Run locally**
+Then run the bot:
 
 ```bash
 npx tsx dev-bot.ts
 ```
 
-**5. Deploy to Vercel**
+To deploy the web app:
 
 ```bash
 vercel --prod
 ```
 
-Set webhook:
-```
-https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-app.vercel.app/api/webhook
-```
+After deployment, set the Telegram webhook to your `/api/webhook` route.
 
----
+## Commands
 
-## Bot Commands
+- `/start` - intro
+- `/help` - command list
+- `/wallet` - wallet address
+- `/portfolio` - holdings and positions
+- `/pnl` - 24h profit and loss
+- `/price` - ETH price
+- `/bridge` - bridge info
+- `/policy` - active limits
+- `/catalog` - optional x402 catalog
+- `/fund` - MoonPay on-ramp
+- `/memory` - saved memory summary
 
-| Command | Description |
-|---|---|
-| `/start` | Introduction and onboarding |
-| `/help` | Full command reference |
-| `/wallet` | Show Lexon wallet address + Basescan link |
-| `/portfolio` | Multi-chain portfolio summary (Zerion) |
-| `/pnl` | 24h profit/loss across all positions |
-| `/price` | Live ETH price |
-| `/bridge` | Cross-chain bridge info + supported chains |
-| `/policy` | Active OWS policy rules and limits |
-| `/fund` | MoonPay on-ramp link |
-| `/memory` | What Lexon remembers about you (Honcho) |
-| `/update` | Pull latest version from git |
+## Notes
 
-**Send allowlist**
-
-| Command | Description |
-|---|---|
-| `/add 0x... [Label]` | Add address to send allowlist |
-| `/remove 0x...` | Remove address from allowlist |
-| `/list` | Show all allowed addresses |
-
-**OWS Contract Whitelist**
-
-| Command | Description |
-|---|---|
-| `/approve 0x... [Label]` | Add contract to OWS policy whitelist |
-| `/unapprove 0x...` | Remove contract from whitelist |
-| `/contracts` | List all approved contracts (trusted + user-added) |
-
-### Natural Language
-
-| Say... | Action |
-|---|---|
-| `"Send 5 USDC to 0x742d..."` | USDC transfer |
-| `"Ali'ye 2 USDC gönder"` | Transfer to named contact |
-| `"What's my balance?"` | Check wallet balance |
-| `"Swap 0.001 ETH to USDC"` | ETH → USDC via Uniswap V3 |
-| `"Swap 3 USDC to ETH on Aerodrome"` | USDC → ETH via Aerodrome |
-| `"Bridge 10 USDC to Arbitrum"` | Cross-chain via Li.Fi |
-| `"ETH fiyatı ne?"` | Live ETH price |
-| `"Bu hafta ne harcadım?"` | Spending summary from memory |
-| `"Portföyüm ne durumda?"` | Multi-chain portfolio |
-| 🎙 Voice note of any of the above | Whisper transcribes + executes |
-
----
-
-## OWS Policy Architecture
-
-Lexon uses the OWS policy engine correctly: policies are only enforced in **agent mode** (`ows_key_...` token). Owner mode (passphrase) bypasses policy — never use in production.
-
-### Access model
-
-| Credential | Mode | Policy enforced? |
-|---|---|---|
-| `ows_key_...` token | Agent | Yes — all attached policies evaluated |
-| passphrase / empty | Owner | No — full access, no checks |
-
-### Policy layers
-
-**Declarative rules** (evaluated in-process by OWS, microseconds):
-
-| Rule | Value | Env var |
-|---|---|---|
-| `allowed_chains` | 13 EVM chains | `OWS_ALLOWED_CHAINS` |
-| `expires_at` | 2027-01-01 | `OWS_POLICY_EXPIRY` |
-
-**Custom executable** (`policy/spend_limit.js`) — OWS pipes `PolicyContext` to it after declarative rules pass:
-
-| Check | Default | Env var | What OWS provides |
-|---|---|---|---|
-| USDC per-tx cap | $100 | `MAX_SEND_USDC` | Decoded from `transaction.data` (ERC-20 selector) |
-| ETH per-tx cap | 0.05 ETH | `OWS_MAX_ETH_PER_TX` | `transaction.value` in wei |
-| Daily ETH cap | 0.1 ETH | `OWS_MAX_DAILY_ETH` | `spending.daily_total` (OWS-tracked natively) |
-| Contract allowlist | Uniswap · Aerodrome · Li.Fi | `/approve` command | `transaction.to` |
-
-**App-layer guards** (enforced in bot.ts before calling OWS — OWS `daily_total` tracks ETH only, not ERC-20):
-
-| Guard | Default | Env var |
-|---|---|---|
-| USDC daily cap | $100 | `MAX_DAILY_USDC` |
-| Tx count/day | 20 | `OWS_MAX_TX_PER_DAY` |
-| Cooldown | 30s | `OWS_COOLDOWN_SECONDS` |
-| Per-address daily | $50 | `OWS_MAX_PER_ADDRESS_DAILY` |
-| Confirmation UX | above $25 | `OWS_CONFIRM_ABOVE_USDC` |
-
-### Key creation
-
-```bash
-# setup.ts does this automatically
-ows key create --name lexon-agent --wallet lexon-wallet --policy lexon-policy
-# => ows_key_abc123...  (store in OWS_API_KEY)
-```
-
-Contract whitelist is dynamic — add via `/approve`, effective immediately (executable reads `data/contracts.json` live without re-registering the policy).
-
----
-
-## Supported Bridge Chains (Li.Fi)
-
-Base → Ethereum, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, zkSync Era, Linea, Scroll, Blast, Mantle, Unichain, Sonic, Berachain, Gnosis, Celo
-
----
-
-## Project Structure
-
-```
-lib/
-  config.ts          All settings from env vars
-  wallet.ts          OWS wallet setup + policy building
-  intent.ts          Multi-provider LLM intent parser
-  bot.ts             Telegram bot command + message handlers
-  memory.ts          Honcho personalized memory wrapper
-  contracts.ts       OWS contract whitelist (trusted + user-added)
-  allowlist.ts       Send allowlist management
-  base.ts            viem Base client + USDC helpers
-  voice.ts           Whisper voice transcription
-  actions/
-    send.ts          USDC send action
-    balance.ts       Balance query action
-    swap.ts          ETH ↔ USDC swap (Uniswap V3 / Universal / Aerodrome)
-  skills/
-    lifi.ts          Cross-chain bridge (Li.Fi + OWS signing)
-    zerion.ts        Multi-chain portfolio, positions, PnL
-    price.ts         Live ETH price
-    moonpay.ts       Token search via MoonPay
-setup.ts             Interactive setup wizard
-dev-bot.ts           Local polling mode for development
-test-integrations.ts Integration tests for all external APIs
-```
-
----
+- OWS is the security layer. It controls what the agent can sign.
+- x402 is optional. Lexon works without it.
+- Policy enforcement is strongest in agent mode with an OWS API key.
 
 ## License
 
