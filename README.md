@@ -2,7 +2,7 @@
 
 Self-hosted, policy-gated DeFi agent on Base.
 
-Lexon is a Telegram bot that lets you send USDC, swap, bridge, and track your portfolio with plain language. Each user runs their own instance with their own OWS wallet and their own limits.
+Lexon is a Telegram bot that lets you send USDC, swap, bridge, and check your portfolio with plain language. Each user runs their own instance with their own OWS wallet and their own limits.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
@@ -11,14 +11,14 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Send USDC to an address or saved contact
 - Swap ETH and USDC on Base
 - Bridge from Base to 17+ EVM chains
-- View multi-chain portfolio and PnL
+- View multi-chain balances
 - Use text or voice in Telegram
 - Apply OWS-based chain, spend, and contract controls
 - Add optional memory, MoonPay, and x402 capability support
 
 ## Stack
 
-- OWS for wallet access and policy-gated signing
+- OWS for wallet management, scoped agent access, policy validation, and signing
 - Base for execution
 - Li.Fi for bridging
 - Zerion for portfolio data
@@ -57,7 +57,7 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/start` - intro
 - `/help` - command list
 - `/wallet` - wallet address
-- `/portfolio` - holdings and positions
+- `/portfolio` - multi-chain balances
 - `/pnl` - 24h profit and loss
 - `/price` - ETH price
 - `/bridge` - bridge info
@@ -68,7 +68,7 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 
 ## Notes
 
-- OWS is the security layer. It controls what the agent can sign.
+- OWS is the wallet and security layer. It gives the agent scoped wallet access and validates actions against your rules before signing.
 - x402 is optional. Lexon works without it.
 - Policy enforcement is strongest in agent mode with an OWS API key.
 

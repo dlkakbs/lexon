@@ -65,9 +65,18 @@ export default function Home() {
                 href={OWS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-outline px-6 py-2 text-sm"
+                className="px-6 py-2 text-sm"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid var(--border)",
+                  background: "var(--bg-terminal)",
+                  color: "var(--text)",
+                  borderRadius: 999,
+                }}
               >
-                explore ows
+                Explore Open Wallet
               </a>
             </div>
           </div>
@@ -84,7 +93,7 @@ export default function Home() {
           {[
             { n: "01", title: "Text or Voice",       desc: "Send a Telegram message or voice note in any language." },
             { n: "02", title: "From message to action", desc: "Lexon understands what you want and maps it to an on-chain action." },
-            { n: "03", title: "OWS enforces policy", desc: "Your rules validate the transaction before anything is signed." },
+            { n: "03", title: "OWS wallet and policy", desc: "OWS gives the agent wallet access and validates the action against your rules before signing." },
             { n: "04", title: "On-chain execution",  desc: "Transaction broadcast to Base with instant receipt." },
           ].map((s) => (
             <div key={s.n} className="term-card">
@@ -123,7 +132,7 @@ export default function Home() {
               {
                 title: "Portfolio",
                 cmd: "portfolio",
-                desc: "Multi-chain balances and PnL.",
+                desc: "Multi-chain balances.",
               },
               {
                 title: "Policy",
@@ -189,7 +198,7 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {[
-                    { mod: "@open-wallet-standard/core", role: "Wallet · Policy · Signing", note: "OWS access control and transaction signing" },
+                    { mod: "@open-wallet-standard/core", role: "Wallet · Agent Access · Policy · Signing", note: "Local wallet management, scoped agent access, policy validation, and transaction signing" },
                     { mod: "Li.Fi REST API",             role: "Bridge",                    note: "Cross-chain routing from Base" },
                     { mod: "Zerion REST API",            role: "Portfolio",                 note: "Balances, positions, and PnL" },
                     { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Natural language to action" },
