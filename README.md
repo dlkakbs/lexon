@@ -16,9 +16,8 @@ In short:
 
 - **OWS** = agent wallet + spend controls
 - **x402** = optional agent-to-agent payments
-- **XMTP** = optional wallet-native notifications
 
-Lexon works fine as a self-hosted DeFi agent even without x402 or XMTP. Those layers are optional extensions, not the core product.
+Lexon works fine as a self-hosted DeFi agent even without x402. The x402 layer is optional, not the core product.
 
 ---
 
@@ -32,8 +31,6 @@ Honcho recalls user preferences + spending history
 OWS policy-gated wallet signs transaction (spend limits enforced)
        ↓
 Transaction executes on Base mainnet
-       ↓
-XMTP notification sent to recipient
 ```
 
 ---
@@ -50,7 +47,6 @@ XMTP notification sent to recipient
 | 🎙 Voice commands | Send a Telegram voice note — Whisper transcribes it |
 | 🧠 Personalized Memory | Honcho remembers your habits, named addresses, spending patterns |
 | 🛡 OWS Policy | 8 configurable spend rules: per-tx, daily, cooldown, contract whitelist |
-| 📩 XMTP notifications | Optional recipient alert after payment |
 | 💳 MoonPay on-ramp | Fund wallet without leaving Telegram |
 | ⚙️ Self-hosted | Run your own instance — your keys, your wallet, your limits |
 | 💸 Optional x402 layer | Add paid capability exchange if you want it |
@@ -69,7 +65,6 @@ XMTP notification sent to recipient
 | **[Honcho](https://honcho.dev/)** | Personalized memory — user habits, named addresses, spending history |
 | **[Zerion](https://zerion.io/)** | Multi-chain portfolio, positions, PnL, transaction history |
 | **[Li.Fi](https://li.fi/)** | Cross-chain bridge — 17+ EVM chains, OWS-signed txs |
-| **[XMTP](https://xmtp.org/)** | Optional wallet-native payment notifications |
 | **[MoonPay](https://www.moonpay.com/)** | USDC on-ramp via `/fund` |
 | **[Uniswap V3](https://uniswap.org/)** | ETH ↔ USDC swaps (SwapRouter02) |
 | **[Uniswap Universal Router](https://uniswap.org/)** | Multi-hop swap routing |
@@ -140,7 +135,6 @@ BASE_RPC_URL=https://mainnet.base.org
 OWS_API_KEY=ows_key_...
 
 # Optional — enhanced features
-XMTP_PRIVATE_KEY=          # EVM private key for XMTP notifications
 HONCHO_API_KEY=             # honcho.dev — personalized memory
 ZERION_API_KEY=             # zerion.io — multi-chain portfolio data
 MOONPAY_API_KEY=            # moonpay.com — on-ramp
@@ -307,7 +301,6 @@ lib/
   allowlist.ts       Send allowlist management
   base.ts            viem Base client + USDC helpers
   voice.ts           Whisper voice transcription
-  xmtp.ts            XMTP recipient notifications
   actions/
     send.ts          USDC send action
     balance.ts       Balance query action

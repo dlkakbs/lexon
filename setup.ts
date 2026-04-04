@@ -292,9 +292,6 @@ OWS_WALLET_NAME=${walletName}
 # Created by setup.ts via createApiKey(). If empty, owner mode is used (no policy).
 OWS_API_KEY=${owsApiKey}
 
-# XMTP (leave empty to skip recipient notifications)
-XMTP_PRIVATE_KEY=
-
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 

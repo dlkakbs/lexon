@@ -5,7 +5,6 @@ import {
   USDC_ABI,
 } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
-import { notifyRecipient } from "../xmtp";
 import { isAllowed } from "../allowlist";
 import { isAddress, parseUnits, encodeFunctionData, serializeTransaction } from "viem";
 import { config } from "../config";
@@ -70,9 +69,6 @@ export async function sendUSDC(to: string, amount: string): Promise<string> {
 
     // Wait for confirmation
     await publicClient.waitForTransactionReceipt({ hash: txHash });
-
-    // Notify recipient via XMTP (best-effort)
-    await notifyRecipient(to, amount, txHash);
 
     return (
       `✅ *Gönderildi!*\n\n` +

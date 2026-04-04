@@ -28,10 +28,8 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
-        <div className="flex flex-col lg:flex-row items-start gap-14">
-
-          {/* Left */}
-          <div className="flex-1">
+        <div className="max-w-3xl mx-auto text-center">
+          <div>
             <div className="flex items-center gap-2 mb-6 fade-in-1">
               <span className="tag tag-cyan">OWS Hackathon 2026</span>
               <span className="tag tag-green">Base Mainnet</span>
@@ -64,7 +62,7 @@ export default function Home() {
               Your wallet, your limits, your agent.
             </p>
 
-            <div className="flex flex-wrap gap-3 fade-in-5">
+            <div className="flex flex-wrap gap-3 justify-center fade-in-5">
               <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"
                 className="btn-green px-7 py-3 text-sm flex items-center gap-2">
                 <TelegramIcon />
@@ -74,110 +72,6 @@ export default function Home() {
                 className="btn-outline px-7 py-3 text-sm">
                 git clone
               </a>
-            </div>
-
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-8 mt-10 pt-8 fade-in-6"
-              style={{ borderTop: "1px solid var(--border-dim)" }}>
-              {[
-                { val: "17+", label: "bridge chains" },
-                { val: "3",   label: "guard layers" },
-                { val: "3",   label: "AI providers" },
-                { val: "1",   label: "your own agent" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "var(--green)" }}>{s.val}</div>
-                  <div style={{ fontSize: 12, color: "var(--muted)" }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — Terminal demo */}
-          <div className="flex-1 max-w-md w-full fade-in-4">
-            <div className="term-window">
-              <div className="term-titlebar">
-                <span className="term-dot term-dot-red" />
-                <span className="term-dot term-dot-yellow" />
-                <span className="term-dot term-dot-green" />
-                <span className="term-title">lexon — telegram session</span>
-              </div>
-              <div className="term-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-
-                <div className="text-muted" style={{ fontSize: 11, marginBottom: 4 }}>
-                  [OK] lexon agent started · Base mainnet · OWS policy active
-                </div>
-
-                <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">Bridge 10 USDC to Arbitrum</span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-yellow">Li.Fi route found</span><br />
-                    Base → Arbitrum · 10 USDC<br />
-                    fee: ~$0.12 · est. 45s<br /><br />
-                    <span className="text-muted">OWS: chain allowed + expiry ok</span><br />
-                    <span className="text-muted">spend guard: under daily limit</span>
-                  </span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-green">Bridge tx signed by OWS</span><br />
-                    <span style={{ fontSize: 11, color: "var(--muted)" }}>0x3f8a...c291 · Arbiscan ↗</span>
-                  </span>
-                </div>
-
-                <hr className="term-divider" style={{ margin: "4px 0" }} />
-
-                <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">Show my portfolio</span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-cyan">Portfolio (Zerion)</span><br />
-                    Total: <span className="text-green">$284.50</span><br />
-                    ETH:  0.081 · Base: $48.20<br />
-                    Arb:  $119.40 · Poly: $22.10<br /><br />
-                    <span className="text-green">24h PnL: +$6.80 (+2.4%)</span>
-                  </span>
-                </div>
-
-                <hr className="term-divider" style={{ margin: "4px 0" }} />
-
-                <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">Swap 0.001 ETH to USDC</span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-green">Swap executed · Uniswap V3</span><br />
-                    <span style={{ fontSize: 11, color: "var(--muted)" }}>0.001 ETH → 2.87 USDC</span>
-                  </span>
-                </div>
-
-                <hr className="term-divider" style={{ margin: "4px 0" }} />
-
-                <div style={{ textAlign: "right" }}>
-                  <span className="msg-user">🎙 voice note · "Ali'ye 2 USDC gönder"</span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-cyan">Whisper transcript</span><br />
-                    "Ali'ye 2 USDC gonder"<br /><br />
-                    <span className="text-muted">Honcho: "Ali" → saved address</span><br />
-                    <span className="text-muted">OWS: within send limit</span>
-                  </span>
-                </div>
-                <div>
-                  <span className="msg-bot">
-                    <span className="text-green">Transfer executed · Base USDC</span><br />
-                    <span style={{ fontSize: 11, color: "var(--muted)" }}>2 USDC → 0x8f3c...19a2 · XMTP notify ↗</span>
-                  </span>
-                </div>
-
-                <div className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>
-                  <span className="text-green">lexon@base</span>:~$ <span className="blink">█</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -244,12 +138,6 @@ export default function Home() {
                 title: "OWS Policy Engine",
                 cmd: "/policy",
                 desc: "Declarative rules (chain, expiry) + custom executable (USDC cap, ETH cap, contract allowlist). Agent-mode API key required — policy bypassed in owner mode.",
-              },
-              {
-                tag: "notify", tagColor: "tag-cyan",
-                title: "XMTP Notifications",
-                cmd: "auto on payment",
-                desc: "Optional wallet-native payment alert layer after successful transfers.",
               },
               {
                 tag: "onramp", tagColor: "tag-green",
@@ -439,7 +327,6 @@ export default function Home() {
                     { mod: "Zerion REST API",            role: "Portfolio · PnL · Txs",     note: "read-only across all chains, OWS partner" },
                     { mod: "Claude / OpenRouter",        role: "Intent Parsing",            note: "Multi-provider: openrouter | anthropic | openai" },
                     { mod: "OpenAI Whisper",             role: "Voice Transcription",       note: "Telegram voice note → text, any language" },
-                    { mod: "@xmtp/xmtp-js",             role: "Payment Notifications",     note: "Wallet-native alerts on transfer" },
                     { mod: "MoonPay",                   role: "USDC On-Ramp",              note: "/fund command, direct into OWS wallet" },
                     { mod: "viem",                      role: "Base Client",               note: "TX construction, USDC helpers, Uniswap ABI" },
                     { mod: "grammy",                    role: "Telegram Bot Framework",    note: "Webhook + polling mode" },
