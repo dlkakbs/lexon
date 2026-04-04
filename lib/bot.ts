@@ -165,14 +165,22 @@ function registerHandlers(bot: Bot, token: string) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
     const catalogPath = "/api/x402/catalog";
     const catalogUrl = appUrl ? `${appUrl}${catalogPath}` : catalogPath;
+    const evaluateBridgePath =
+      "/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10";
+    const evaluateBridgeUrl = appUrl ? `${appUrl}${evaluateBridgePath}` : evaluateBridgePath;
 
     await ctx.reply(
       `💸 *Lexon x402 Catalog*\n\n` +
-      `Lexon paid capability layer is optional. This catalog advertises what this instance can expose to other agents.\n\n` +
+      `Lexon exposes callable capabilities for other agents over x402.\n\n` +
+      `*Live capability*\n` +
+      `• \`evaluate_bridge\`\n` +
+      `• returns allow/deny, matched rules, route, and fee\n` +
+      `• paid via x402\n\n` +
+      `🔗 Evaluate bridge: ${evaluateBridgeUrl}\n` +
       `🔗 Catalog: ${catalogUrl}\n\n` +
       `Current mode:\n` +
-      `• self-hosted DeFi agent first\n` +
-      `• optional paid capabilities over x402`,
+      `• self-hosted wallet operator\n` +
+      `• monetizable capabilities over x402`,
       { parse_mode: "Markdown" }
     );
   });

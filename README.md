@@ -72,7 +72,7 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 
 ## x402 Capability
 
-Lexon exposes a paid bridge preflight endpoint over x402:
+Lexon exposes a live paid bridge preflight capability over x402.
 
 `/api/x402/paid/evaluate-bridge?fromChain=base&toChain=arbitrum&fromToken=USDC&amount=10`
 
@@ -82,6 +82,8 @@ It returns:
 - matched policy rules
 - route and fee estimate
 - what would execute if approved
+
+Any agent can call this endpoint and pay via x402.
 
 ## Notes
 
