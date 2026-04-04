@@ -32,15 +32,6 @@ export default function Home() {
               <span className="tag tag-green">Base Mainnet</span>
             </div>
 
-            <div className="fade-in-2 mb-3" style={{ fontSize: 13, color: "var(--muted)" }}>
-              <span className="text-green">lexon@base</span>
-              <span className="text-muted">:</span>
-              <span className="text-cyan">~</span>
-              <span className="text-muted">$ </span>
-              <span className="text-green">./start --agent</span>
-              <span className="blink" style={{ color: "var(--green)" }}>█</span>
-            </div>
-
             <h1 className="fade-in-3 glow" style={{
               fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
               fontWeight: 700,
@@ -50,7 +41,7 @@ export default function Home() {
               marginBottom: "1.5rem",
             }}>
               Self-hosted, policy-gated<br />
-              <span style={{ color: "var(--text)" }}>wallet operator for AI agents.</span>
+              <span style={{ color: "var(--text)" }}>wallet operator for AI agents</span>
             </h1>
 
             <p className="fade-in-4" style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.8, maxWidth: 620, marginBottom: "2rem", marginLeft: "auto", marginRight: "auto" }}>
