@@ -81,9 +81,9 @@ export default function Home() {
               style={{ borderTop: "1px solid var(--border-dim)" }}>
               {[
                 { val: "17+", label: "bridge chains" },
-                { val: "2+1", label: "OWS policy layers" },
+                { val: "3",   label: "guard layers" },
                 { val: "3",   label: "AI providers" },
-                { val: "∞",   label: "self-hosted" },
+                { val: "1",   label: "your own agent" },
               ].map((s) => (
                 <div key={s.label}>
                   <div style={{ fontSize: 22, fontWeight: 700, color: "var(--green)" }}>{s.val}</div>
@@ -151,6 +151,26 @@ export default function Home() {
                   <span className="msg-bot">
                     <span className="text-green">Swap executed · Uniswap V3</span><br />
                     <span style={{ fontSize: 11, color: "var(--muted)" }}>0.001 ETH → 2.87 USDC</span>
+                  </span>
+                </div>
+
+                <hr className="term-divider" style={{ margin: "4px 0" }} />
+
+                <div style={{ textAlign: "right" }}>
+                  <span className="msg-user">🎙 voice note · "Ali'ye 2 USDC gönder"</span>
+                </div>
+                <div>
+                  <span className="msg-bot">
+                    <span className="text-cyan">Whisper transcript</span><br />
+                    "Ali'ye 2 USDC gonder"<br /><br />
+                    <span className="text-muted">Honcho: "Ali" → saved address</span><br />
+                    <span className="text-muted">OWS: within send limit</span>
+                  </span>
+                </div>
+                <div>
+                  <span className="msg-bot">
+                    <span className="text-green">Transfer executed · Base USDC</span><br />
+                    <span style={{ fontSize: 11, color: "var(--muted)" }}>2 USDC → 0x8f3c...19a2 · XMTP notify ↗</span>
                   </span>
                 </div>
 
