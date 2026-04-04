@@ -114,6 +114,32 @@ function compactAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
+function humanizeAlliumError(err: any, mode: "score" | "patterns"): string {
+  const message = err?.message || "";
+
+  if (message.includes("ALLIUM_API_KEY is not set")) {
+    return mode === "score"
+      ? "❌ Wallet score şu an kullanılamıyor: `ALLIUM_API_KEY` ayarlı değil."
+      : "❌ Wallet patterns şu an kullanılamıyor: `ALLIUM_API_KEY` ayarlı değil.";
+  }
+
+  if (message.includes("Allium API error: 401") || message.includes("Allium API error: 403")) {
+    return mode === "score"
+      ? "❌ Wallet score alınamadı: Allium API key geçersiz veya yetkisiz."
+      : "❌ Wallet patterns alınamadı: Allium API key geçersiz veya yetkisiz.";
+  }
+
+  if (message.includes("Allium API error: 429")) {
+    return mode === "score"
+      ? "❌ Wallet score şu an rate limit'e takıldı. Biraz sonra tekrar dene."
+      : "❌ Wallet patterns şu an rate limit'e takıldı. Biraz sonra tekrar dene.";
+  }
+
+  return mode === "score"
+    ? `❌ Wallet score alınamadı: ${message.slice(0, 100) || "Bilinmeyen hata"}`
+    : `❌ Wallet patterns alınamadı: ${message.slice(0, 100) || "Bilinmeyen hata"}`;
+}
+
 export async function scoreWallet(address: string): Promise<string> {
   try {
     const [transactions, balances] = await Promise.all([
@@ -174,7 +200,7 @@ export async function scoreWallet(address: string): Promise<string> {
       flags.map((flag) => `• ${flag}`).join("\n")
     );
   } catch (err: any) {
-    return `❌ Wallet score alınamadı: ${err?.message?.slice(0, 100)}`;
+    return humanizeAlliumError(err, "score");
   }
 }
 
@@ -221,6 +247,6 @@ export async function getWalletPatterns(address: string): Promise<string> {
       `*Top balances:*\n${tokenLines}`
     );
   } catch (err: any) {
-    return `❌ Wallet patterns alınamadı: ${err?.message?.slice(0, 100)}`;
+    return humanizeAlliumError(err, "patterns");
   }
 }
