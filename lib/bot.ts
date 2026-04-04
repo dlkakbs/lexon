@@ -1,7 +1,7 @@
 import { Bot, Context, webhookCallback } from "grammy";
 import { exec } from "child_process";
 import { config } from "./config";
-import { parseIntent } from "./intent";
+import { generateChatReply, parseIntent } from "./intent";
 import { transcribeVoice } from "./voice";
 import { sendUSDC } from "./actions/send";
 import { checkBalance } from "./actions/balance";
@@ -871,8 +871,8 @@ async function handleCommand(ctx: Context, override?: string) {
       break;
     }
     case "unknown": {
-      response = action.message;
-      await ctx.reply(`🤔 ${action.message}\n\n/help yazarak ne yapabileceğimi görebilirsin.`);
+      response = await generateChatReply(text, userContext);
+      await ctx.reply(response, { parse_mode: "Markdown" });
       break;
     }
   }

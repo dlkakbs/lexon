@@ -103,7 +103,24 @@ Rules:
 ${userContext ? `USER CONTEXT (from memory):\n${userContext}` : ""}`.trim();
 }
 
-async function callLLM(systemPrompt: string, userText: string): Promise<string> {
+function buildChatPrompt(userContext: string): string {
+  return `You are Lexon, a conversational wallet operator for AI agents on Base.
+
+You can chat naturally with the user, explain what you do, answer product questions, and discuss DeFi workflows in a helpful way.
+
+Rules:
+- Reply naturally, not as JSON
+- Keep the tone concise, warm, and competent
+- If the user is casually chatting, chat back normally
+- If the user asks what you can do, explain your capabilities clearly
+- Do not claim an action was executed unless the execution flow actually ran
+- For sensitive actions like send, swap, or bridge, tell the user to state the action clearly
+- If you're unsure about live market facts, say so briefly instead of inventing data
+
+${userContext ? `USER CONTEXT (from memory):\n${userContext}` : ""}`.trim();
+}
+
+async function callLLM(systemPrompt: string, userText: string, maxTokens = 256): Promise<string> {
   const { aiProvider, aiModel } = config;
 
   // ── OpenRouter (default) ──────────────────────────────────────────────────
@@ -118,7 +135,7 @@ async function callLLM(systemPrompt: string, userText: string): Promise<string> 
       },
       body: JSON.stringify({
         model: aiModel,
-        max_tokens: 256,
+        max_tokens: maxTokens,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userText },
@@ -140,7 +157,7 @@ async function callLLM(systemPrompt: string, userText: string): Promise<string> 
       },
       body: JSON.stringify({
         model: aiModel || "claude-sonnet-4-6",
-        max_tokens: 256,
+        max_tokens: maxTokens,
         system: systemPrompt,
         messages: [{ role: "user", content: userText }],
       }),
@@ -159,7 +176,7 @@ async function callLLM(systemPrompt: string, userText: string): Promise<string> 
       },
       body: JSON.stringify({
         model: aiModel || "gpt-4o-mini",
-        max_tokens: 256,
+        max_tokens: maxTokens,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userText },
@@ -187,6 +204,15 @@ export async function parseIntent(text: string, userContext = ""): Promise<Actio
       message: "Komutu anlayamadım. /help yazarak neler yapabileceğimi görebilirsin.",
     };
   }
+}
+
+export async function generateChatReply(text: string, userContext = ""): Promise<string> {
+  try {
+    const reply = await callLLM(buildChatPrompt(userContext), text, 400);
+    if (reply?.trim()) return reply.trim();
+  } catch {}
+
+  return "İyiyim. Ben Lexon; Base üzerinde çalışan bir wallet operator agent’ıyım. İstersen transfer, swap, bridge, wallet analysis ya da capability flow’ları konusunda yardımcı olabilirim.";
 }
 
 function classifyToolIntent(text: string): Action | null {
