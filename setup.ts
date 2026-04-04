@@ -94,6 +94,8 @@ async function main() {
   info("https://t.me/BotFather");
   const telegramToken = await askSecret("TELEGRAM_BOT_TOKEN");
   if (!telegramToken) { warn("Telegram token zorunlu!"); process.exit(1); }
+  info("Telegram owner ID için @userinfobot veya @RawDataBot kullan.");
+  info("Botu yönetebilecek kendi numeric Telegram user ID'ni gir.");
   const telegramOwnerIds = await ask("TELEGRAM_OWNER_IDS (comma-separated Telegram user IDs)", "");
 
   // ── 2. OpenRouter ─────────────────────────────────────────────────────────
