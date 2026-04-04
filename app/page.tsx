@@ -178,25 +178,52 @@ export default function Home() {
             Any agent can call this endpoint and pay via x402.
           </div>
         </div>
-        <div className="term-window" style={{ maxWidth: 760 }}>
-          <div className="term-titlebar">
-            <span className="term-dot term-dot-red" />
-            <span className="term-dot term-dot-yellow" />
-            <span className="term-dot term-dot-green" />
-            <span className="term-title">evaluate_bridge</span>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="term-window" style={{ maxWidth: 760 }}>
+            <div className="term-titlebar">
+              <span className="term-dot term-dot-red" />
+              <span className="term-dot term-dot-yellow" />
+              <span className="term-dot term-dot-green" />
+              <span className="term-title">seller · evaluate_bridge</span>
+            </div>
+            <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
+              <div className="text-cyan">endpoint</div>
+              <div className="text-muted">/api/x402/paid/evaluate-bridge</div>
+
+              <div className="text-cyan" style={{ marginTop: 10 }}>input</div>
+              <div className="text-muted">fromChain · toChain · fromToken · amount</div>
+
+              <div className="text-cyan" style={{ marginTop: 10 }}>output</div>
+              <div className="text-muted">allow/deny · matched rules · route · fee</div>
+
+              <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
+              <div className="text-muted">paid via x402 · {X402_PRICE}</div>
+
+              <div className="text-cyan" style={{ marginTop: 10 }}>next</div>
+              <div className="text-muted">more capabilities coming soon</div>
+            </div>
           </div>
-          <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
-            <div className="text-cyan">endpoint</div>
-            <div className="text-muted">/api/x402/paid/evaluate-bridge</div>
 
-            <div className="text-cyan" style={{ marginTop: 10 }}>input</div>
-            <div className="text-muted">fromChain · toChain · fromToken · amount</div>
+          <div className="term-window" style={{ maxWidth: 760 }}>
+            <div className="term-titlebar">
+              <span className="term-dot term-dot-red" />
+              <span className="term-dot term-dot-yellow" />
+              <span className="term-dot term-dot-green" />
+              <span className="term-title">buyer · paid market research</span>
+            </div>
+            <div className="term-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
+              <div className="text-cyan">command</div>
+              <div className="text-muted">/research &lt;query&gt;</div>
 
-            <div className="text-cyan" style={{ marginTop: 10 }}>output</div>
-            <div className="text-muted">allow/deny · matched rules · route · fee</div>
+              <div className="text-cyan" style={{ marginTop: 10 }}>flow</div>
+              <div className="text-muted">call remote endpoint · pay via x402 · return result</div>
 
-            <div className="text-cyan" style={{ marginTop: 10 }}>payment</div>
-            <div className="text-muted">paid via x402 · {X402_PRICE}</div>
+              <div className="text-cyan" style={{ marginTop: 10 }}>use case</div>
+              <div className="text-muted">paid deep market research from remote agent endpoints</div>
+
+              <div className="text-cyan" style={{ marginTop: 10 }}>extensible</div>
+              <div className="text-muted">different remote endpoint URLs can unlock different capabilities</div>
+            </div>
           </div>
         </div>
       </section>
