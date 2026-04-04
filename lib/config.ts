@@ -82,6 +82,14 @@ export const config = {
   moonpayApiKey: process.env.MOONPAY_API_KEY || "",
   moonpayWalletName: process.env.MOONPAY_WALLET_NAME || "lexon-wallet",
 
+  // Generic owners / admins.
+  // Prefer LEXON_OWNER_IDS for transport-agnostic setups.
+  // TELEGRAM_OWNER_IDS remains as backward-compatible fallback.
+  ownerIds: (process.env.LEXON_OWNER_IDS || process.env.TELEGRAM_OWNER_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+
   // Telegram owners / admins
   telegramOwnerIds: (process.env.TELEGRAM_OWNER_IDS || "")
     .split(",")

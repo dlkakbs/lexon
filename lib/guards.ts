@@ -219,7 +219,7 @@ export function enforceTransactionGuards(input: TransactionGuardInput): GuardRes
 }
 
 export function requireHighValueConfirmation(
-  userId: number | undefined,
+  userId: string | number | undefined,
   action: Action,
   amountUSDC?: number
 ): GuardResult {

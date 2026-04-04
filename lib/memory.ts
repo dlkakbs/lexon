@@ -11,9 +11,12 @@ function getClient(): InstanceType<typeof Honcho> {
   return _honcho;
 }
 
-/** Her Telegram kullanıcısına ait peer id */
-function peerId(telegramUserId: number): string {
-  return `telegram-${telegramUserId}`;
+function peerId(actorKey: string): string {
+  return actorKey;
+}
+
+export function createActorKey(transport: string, actorId: string | number): string {
+  return `${transport}-${String(actorId)}`;
 }
 
 /**
@@ -25,11 +28,19 @@ export async function logInteraction(
   userText: string,
   agentResponse: string
 ): Promise<void> {
+  return logInteractionForActor(createActorKey("telegram", telegramUserId), userText, agentResponse);
+}
+
+export async function logInteractionForActor(
+  actorKey: string,
+  userText: string,
+  agentResponse: string
+): Promise<void> {
   try {
     const honcho = getClient();
-    const user = await honcho.peer(peerId(telegramUserId));
+    const user = await honcho.peer(peerId(actorKey));
     const bot = await honcho.peer("lexon-bot");
-    const session = await honcho.session(`session-${telegramUserId}-${Date.now()}`);
+    const session = await honcho.session(`session-${actorKey}-${Date.now()}`);
     await session.addPeers([user, bot]);
     await session.addMessages([
       user.message(userText),
@@ -48,9 +59,16 @@ export async function queryMemory(
   telegramUserId: number,
   question: string
 ): Promise<string | null> {
+  return queryMemoryForActor(createActorKey("telegram", telegramUserId), question);
+}
+
+export async function queryMemoryForActor(
+  actorKey: string,
+  question: string
+): Promise<string | null> {
   try {
     const honcho = getClient();
-    const user = await honcho.peer(peerId(telegramUserId));
+    const user = await honcho.peer(peerId(actorKey));
     return await user.chat(question);
   } catch {
     return null;
@@ -62,8 +80,12 @@ export async function queryMemory(
  * Claude'a "bu kullanıcı genelde ne yapar" bilgisini verir.
  */
 export async function getUserContext(telegramUserId: number): Promise<string> {
-  const result = await queryMemory(
-    telegramUserId,
+  return getUserContextForActor(createActorKey("telegram", telegramUserId));
+}
+
+export async function getUserContextForActor(actorKey: string): Promise<string> {
+  const result = await queryMemoryForActor(
+    actorKey,
     "Summarize this user's DeFi habits: preferred DEX, frequent addresses, typical amounts, language preference. Be concise (2-3 sentences max)."
   );
   return result ?? "";
@@ -73,8 +95,12 @@ export async function getUserContext(telegramUserId: number): Promise<string> {
  * Harcama özeti sorgular.
  */
 export async function getSpendingSummary(telegramUserId: number): Promise<string> {
-  const result = await queryMemory(
-    telegramUserId,
+  return getSpendingSummaryForActor(createActorKey("telegram", telegramUserId));
+}
+
+export async function getSpendingSummaryForActor(actorKey: string): Promise<string> {
+  const result = await queryMemoryForActor(
+    actorKey,
     "List all USDC transactions this user has made: amounts, recipient addresses, and dates if available. Format as a bullet list."
   );
   return result ?? "Henüz kayıtlı işlem bulunamadı.";
@@ -88,8 +114,15 @@ export async function resolveNameToAddress(
   telegramUserId: number,
   name: string
 ): Promise<string | null> {
-  const result = await queryMemory(
-    telegramUserId,
+  return resolveNameToAddressForActor(createActorKey("telegram", telegramUserId), name);
+}
+
+export async function resolveNameToAddressForActor(
+  actorKey: string,
+  name: string
+): Promise<string | null> {
+  const result = await queryMemoryForActor(
+    actorKey,
     `Does this user have a contact or address labeled "${name}"? If yes, return ONLY the 0x Ethereum address. If no, return null.`
   );
   if (!result) return null;
@@ -105,8 +138,15 @@ export async function isKnownAddress(
   telegramUserId: number,
   address: string
 ): Promise<boolean> {
-  const result = await queryMemory(
-    telegramUserId,
+  return isKnownAddressForActor(createActorKey("telegram", telegramUserId), address);
+}
+
+export async function isKnownAddressForActor(
+  actorKey: string,
+  address: string
+): Promise<boolean> {
+  const result = await queryMemoryForActor(
+    actorKey,
     `Has this user ever sent USDC to address ${address} before? Answer only yes or no.`
   );
   return result?.toLowerCase().includes("yes") ?? false;

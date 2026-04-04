@@ -2,7 +2,7 @@
 
 Self-hosted, policy-gated wallet operator for AI agents.
 
-Lexon runs as a Telegram-based agent interface, uses OWS for delegated wallet access under user-defined rules, and executes actions on Base.
+Lexon is evolving toward a private multi-agent coordination model: XMTP for group coordination, OWS for delegated wallet access under user-defined rules, and x402 for paid capability exchange on Base.
 
 Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
@@ -13,7 +13,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Bridge from Base to supported chains
 - View wallet balances and activity
 - Score Base wallets and inspect patterns
-- Run through Telegram with text or voice
+- Coordinate multiple Lexon agents in private rooms
 - Enforce delegated wallet access with OWS before signing
 - Expose and buy monetizable capabilities over x402
 
@@ -29,7 +29,25 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 - Honcho for optional memory
 - MoonPay for optional on-ramp
 - x402 for monetizable capabilities
-- Next.js and grammy for the app and bot
+- Next.js for the app and dashboard
+- Telegram remains available during the transport refactor
+
+## Multi-Agent Coordination
+
+```text
+Lexon A (OWS wallet: 0xAAA)          Lexon B (OWS wallet: 0xBBB)
+          │                                     │
+          └────────── XMTP Group Layer ─────────┘
+                     coordination
+                     capability discovery
+                     x402 service exchange
+                     shared planning
+                                │
+                local OWS policy + x402 + onchain execution
+                   each Lexon executes independently
+                                │
+                 private dashboard for each Lexon instance
+```
 
 ## How OWS Works Here
 
@@ -70,6 +88,12 @@ Then run the bot:
 npx tsx dev-bot.ts
 ```
 
+To start the XMTP coordination agent locally:
+
+```bash
+npm run xmtp
+```
+
 If you want a direct terminal command instead of `npx tsx dev-bot.ts`, run this once:
 
 ```bash
@@ -88,7 +112,7 @@ or:
 lexon-gateway
 ```
 
-Set `TELEGRAM_OWNER_IDS` in `.env.local` to the Telegram user IDs allowed to use wallet, admin, and paid buyer flows.
+Set `LEXON_OWNER_IDS` in `.env.local` to the actor IDs allowed to use wallet, admin, and paid buyer flows. `TELEGRAM_OWNER_IDS` remains as a backward-compatible fallback during the transport migration.
 
 
 ## Commands
@@ -159,7 +183,8 @@ For demo/testing, Lexon also includes a local research capability.
 - x402 buyer payments use the same OWS-managed wallet and policy-gated signing flow.
 - Tool-heavy queries are routed deterministically when possible: wallet risk and activity go to Allium, market research goes to a paid x402 research endpoint.
 - Policy enforcement is strongest in agent mode with an OWS API key.
-- Wallet, admin, and paid buyer flows should be restricted with `TELEGRAM_OWNER_IDS`.
+- Wallet, admin, and paid buyer flows should be restricted with `LEXON_OWNER_IDS`.
+- XMTP coordination requires persistent local storage for its DB files across restarts.
 
 ## License
 
