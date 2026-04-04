@@ -14,8 +14,10 @@ import { getPortfolio, getPositions, getTransactionHistory } from "./skills/zeri
 import { bridge } from "./skills/lifi";
 import { searchToken } from "./skills/moonpay";
 import { getWalletPatterns, scoreWallet } from "./skills/allium";
+import { extractTxHash, formatPolicyTraceSummary, logPolicyTrace } from "./policy-trace";
 import {
   enforceTransactionGuards,
+  getGuardUsageSummary,
   recordSuccessfulTransaction,
   requireHighValueConfirmation,
 } from "./guards";
@@ -30,6 +32,26 @@ import {
 
 function isSuccessfulResponse(response: string): boolean {
   return response.startsWith("✅");
+}
+
+function describeRequestedAction(
+  kind: "send" | "swap" | "bridge",
+  details: Record<string, string | number | undefined>
+): string {
+  if (kind === "send") {
+    return `send ${details.amount ?? "?"} USDC to ${details.to ?? "recipient"}`;
+  }
+  if (kind === "swap") {
+    return `swap ${details.amount ?? "?"} ${details.fromToken ?? "asset"} to ${details.toToken ?? "asset"}`;
+  }
+  return `bridge ${details.amount ?? "?"} ${details.fromToken ?? "asset"} from ${details.fromChain ?? "base"} to ${details.toChain ?? "destination"}`;
+}
+
+function describeExecutedAction(
+  kind: "send" | "swap" | "bridge",
+  details: Record<string, string | number | undefined>
+): string {
+  return describeRequestedAction(kind, details);
 }
 
 async function resolveTargetAddress(ctx: Context, explicit?: string) {
@@ -91,6 +113,7 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 /price — Anlık ETH fiyatı
 /bridge — Cross-chain bridge bilgisi
 /policy — Aktif OWS policy kuralları
+/audit — Son policy kararları ve günlük özet
 /catalog — x402 capability catalog linki
 
 👥 *Gönderim Listesi*
@@ -152,6 +175,10 @@ function registerHandlers(bot: Bot, token: string) {
       `• optional paid capabilities over x402`,
       { parse_mode: "Markdown" }
     );
+  });
+
+  bot.command("audit", async (ctx) => {
+    await ctx.reply(formatPolicyTraceSummary(), { parse_mode: "Markdown" });
   });
 
   // /add 0x... İsim — gönderim allowlist'i
@@ -428,12 +455,21 @@ async function handleCommand(ctx: Context, override?: string) {
     case "send": {
       let to = action.to;
       const amount = Number.parseFloat(action.amount);
+      const requestedAction = describeRequestedAction("send", { amount: action.amount, to: action.to || action.name });
 
       // İsimle gönderim: "Ali'ye gönder" → adres çözümle
       if ((!to || !to.startsWith("0x")) && action.name && userId) {
         const resolved = await resolveNameToAddress(userId, action.name);
         if (!resolved) {
           response = `🤔 "${action.name}" adına kayıtlı adres bulunamadı.\n\nŞunu dene: \`/allow 0x... ${action.name}\``;
+          logPolicyTrace({
+            decision: "deny",
+            requestedType: "send",
+            requestedAction,
+            guardCode: "name_resolution_failed",
+            matchedRules: ["recipient_resolution"],
+            denyReason: `No address found for ${action.name}`,
+          });
           await ctx.reply(response, { parse_mode: "Markdown" });
           break;
         }
@@ -444,6 +480,15 @@ async function handleCommand(ctx: Context, override?: string) {
       if (userId && to.startsWith("0x")) {
         const known = await isKnownAddress(userId, to);
         if (!known) {
+          logPolicyTrace({
+            decision: "deny",
+            requestedType: "send",
+            requestedAction,
+            guardCode: "recipient_not_trusted",
+            matchedRules: ["recipient_allowlist"],
+            denyReason: "Recipient is not yet trusted",
+            details: { recipient: to },
+          });
           await ctx.reply(
             `⚠️ *Yeni adres!*\n\n\`${to}\`\n\nBu adrese daha önce göndermemişsin. Devam etmek için tekrar "evet gönder ${action.amount} USDC to ${to}" yaz.`,
             { parse_mode: "Markdown" }
@@ -455,6 +500,15 @@ async function handleCommand(ctx: Context, override?: string) {
       const confirmation = requireHighValueConfirmation(userId, { ...action, to }, amount);
       if (!confirmation.ok) {
         response = confirmation.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "send",
+          requestedAction,
+          guardCode: confirmation.code,
+          matchedRules: confirmation.matchedRules,
+          denyReason: confirmation.message,
+          details: confirmation.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -466,6 +520,15 @@ async function handleCommand(ctx: Context, override?: string) {
       });
       if (!guard.ok) {
         response = guard.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "send",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: guard.matchedRules,
+          denyReason: guard.message,
+          details: guard.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -477,6 +540,26 @@ async function handleCommand(ctx: Context, override?: string) {
           kind: "send",
           amountUSDC: Number.isFinite(amount) ? amount : undefined,
           recipient: to,
+        });
+        logPolicyTrace({
+          decision: "allow",
+          requestedType: "send",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          executedAction: describeExecutedAction("send", { amount: action.amount, to }),
+          executionTxHash: extractTxHash(response) ?? undefined,
+          details: { recipient: to, usage: getGuardUsageSummary() },
+        });
+      } else {
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "send",
+          requestedAction,
+          guardCode: "execution_failed",
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          denyReason: response,
+          details: { recipient: to },
         });
       }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
@@ -531,9 +614,24 @@ async function handleCommand(ctx: Context, override?: string) {
     case "bridge": {
       const amount = Number.parseFloat(action.amount);
       const amountUSDC = action.fromToken.toUpperCase() === "USDC" && Number.isFinite(amount) ? amount : undefined;
+      const requestedAction = describeRequestedAction("bridge", {
+        amount: action.amount,
+        fromToken: action.fromToken,
+        fromChain: action.fromChain,
+        toChain: action.toChain,
+      });
       const confirmation = requireHighValueConfirmation(userId, action, amountUSDC);
       if (!confirmation.ok) {
         response = confirmation.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "bridge",
+          requestedAction,
+          guardCode: confirmation.code,
+          matchedRules: confirmation.matchedRules,
+          denyReason: confirmation.message,
+          details: confirmation.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -543,6 +641,15 @@ async function handleCommand(ctx: Context, override?: string) {
       });
       if (!guard.ok) {
         response = guard.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "bridge",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: guard.matchedRules,
+          denyReason: guard.message,
+          details: guard.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -552,6 +659,29 @@ async function handleCommand(ctx: Context, override?: string) {
         recordSuccessfulTransaction({
           kind: "bridge",
           amountUSDC,
+        });
+        logPolicyTrace({
+          decision: "allow",
+          requestedType: "bridge",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          executedAction: describeExecutedAction("bridge", {
+            amount: action.amount,
+            fromToken: action.fromToken,
+            fromChain: action.fromChain,
+            toChain: action.toChain,
+          }),
+          executionTxHash: extractTxHash(response) ?? undefined,
+        });
+      } else {
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "bridge",
+          requestedAction,
+          guardCode: "execution_failed",
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          denyReason: response,
         });
       }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, { parse_mode: "Markdown" });
@@ -579,9 +709,23 @@ async function handleCommand(ctx: Context, override?: string) {
       break;
     }
     case "swap_eth_usdc": {
+      const requestedAction = describeRequestedAction("swap", {
+        amount: action.amount,
+        fromToken: "ETH",
+        toToken: "USDC",
+      });
       const guard = enforceTransactionGuards({ kind: "swap" });
       if (!guard.ok) {
         response = guard.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: guard.matchedRules,
+          denyReason: guard.message,
+          details: guard.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -589,6 +733,24 @@ async function handleCommand(ctx: Context, override?: string) {
       response = await swapETHtoUSDC(action.amount, action.dex);
       if (isSuccessfulResponse(response)) {
         recordSuccessfulTransaction({ kind: "swap" });
+        logPolicyTrace({
+          decision: "allow",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: guard.matchedRules,
+          executedAction: describeExecutedAction("swap", { amount: action.amount, fromToken: "ETH", toToken: "USDC" }),
+          executionTxHash: extractTxHash(response) ?? undefined,
+        });
+      } else {
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: "execution_failed",
+          matchedRules: guard.matchedRules,
+          denyReason: response,
+        });
       }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {
         parse_mode: "Markdown",
@@ -597,6 +759,11 @@ async function handleCommand(ctx: Context, override?: string) {
     }
     case "swap_usdc_eth": {
       const amount = Number.parseFloat(action.amount);
+      const requestedAction = describeRequestedAction("swap", {
+        amount: action.amount,
+        fromToken: "USDC",
+        toToken: "ETH",
+      });
       const confirmation = requireHighValueConfirmation(
         userId,
         action,
@@ -604,6 +771,15 @@ async function handleCommand(ctx: Context, override?: string) {
       );
       if (!confirmation.ok) {
         response = confirmation.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: confirmation.code,
+          matchedRules: confirmation.matchedRules,
+          denyReason: confirmation.message,
+          details: confirmation.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -613,6 +789,15 @@ async function handleCommand(ctx: Context, override?: string) {
       });
       if (!guard.ok) {
         response = guard.message;
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: guard.matchedRules,
+          denyReason: guard.message,
+          details: guard.details,
+        });
         await ctx.reply(response, { parse_mode: "Markdown" });
         break;
       }
@@ -622,6 +807,24 @@ async function handleCommand(ctx: Context, override?: string) {
         recordSuccessfulTransaction({
           kind: "swap",
           amountUSDC: Number.isFinite(amount) ? amount : undefined,
+        });
+        logPolicyTrace({
+          decision: "allow",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: guard.code,
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          executedAction: describeExecutedAction("swap", { amount: action.amount, fromToken: "USDC", toToken: "ETH" }),
+          executionTxHash: extractTxHash(response) ?? undefined,
+        });
+      } else {
+        logPolicyTrace({
+          decision: "deny",
+          requestedType: "swap",
+          requestedAction,
+          guardCode: "execution_failed",
+          matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
+          denyReason: response,
         });
       }
       await ctx.api.editMessageText(ctx.chat!.id, msg.message_id, response, {

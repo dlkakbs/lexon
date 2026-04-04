@@ -28,9 +28,27 @@ type TransactionGuardInput = {
   recipient?: string;
 };
 
-type GuardResult =
-  | { ok: true }
-  | { ok: false; message: string };
+export type GuardDecisionCode =
+  | "allow"
+  | "confirm_required"
+  | "max_tx_per_day"
+  | "cooldown"
+  | "max_daily_usdc"
+  | "max_per_address_daily";
+
+export type GuardResult =
+  | {
+      ok: true;
+      code: "allow";
+      matchedRules: string[];
+    }
+  | {
+      ok: false;
+      code: Exclude<GuardDecisionCode, "allow">;
+      message: string;
+      matchedRules: string[];
+      details?: Record<string, string | number | boolean | null>;
+    };
 
 const INITIAL_STATE = (): GuardState => ({
   day: currentDay(),
@@ -81,6 +99,15 @@ function formatUsd(amount: number): string {
   return Number(amount.toFixed(2)).toString();
 }
 
+function matchedRulesFor(input: TransactionGuardInput): string[] {
+  const rules = ["allowed_chains", "expires_at", "max_tx_per_day", "cooldown"];
+  if (input.amountUSDC && input.amountUSDC > 0) {
+    rules.push("max_send_usdc", "max_daily_usdc");
+    if (input.recipient) rules.push("max_per_address_daily", "recipient_allowlist");
+  }
+  return rules;
+}
+
 function fingerprintAction(action: Action): string | null {
   switch (action.type) {
     case "send":
@@ -115,11 +142,18 @@ export function enforceTransactionGuards(input: TransactionGuardInput): GuardRes
   const state = ensureState();
   const now = Date.now();
   pruneExpiredConfirmations(state, now);
+  const matchedRules = matchedRulesFor(input);
 
   if (config.maxTxPerDay > 0 && state.txCount >= config.maxTxPerDay) {
     return {
       ok: false,
+      code: "max_tx_per_day",
+      matchedRules,
       message: `❌ Günlük işlem limiti doldu: bugün en fazla ${config.maxTxPerDay} işlem yapılabilir.`,
+      details: {
+        txCount: state.txCount,
+        maxTxPerDay: config.maxTxPerDay,
+      },
     };
   }
 
@@ -129,7 +163,13 @@ export function enforceTransactionGuards(input: TransactionGuardInput): GuardRes
       const waitSeconds = Math.ceil(waitMs / 1000);
       return {
         ok: false,
+        code: "cooldown",
+        matchedRules,
         message: `⏳ Cooldown aktif. Yeni işlem için ${waitSeconds} saniye bekle.`,
+        details: {
+          waitSeconds,
+          cooldownSeconds: config.cooldownSeconds,
+        },
       };
     }
   }
@@ -139,9 +179,16 @@ export function enforceTransactionGuards(input: TransactionGuardInput): GuardRes
     if (config.maxDailyUSDC > 0 && nextDailyTotal > config.maxDailyUSDC) {
       return {
         ok: false,
+        code: "max_daily_usdc",
+        matchedRules,
         message:
           `❌ Günlük USDC limiti aşılır: bugün ${formatUsd(state.usdcDailyTotal)} USDC kullanıldı, ` +
           `limit ${formatUsd(config.maxDailyUSDC)} USDC.`,
+        details: {
+          usedToday: Number(state.usdcDailyTotal.toFixed(2)),
+          requestedUSDC: input.amountUSDC,
+          maxDailyUSDC: config.maxDailyUSDC,
+        },
       };
     }
 
@@ -152,24 +199,36 @@ export function enforceTransactionGuards(input: TransactionGuardInput): GuardRes
       if (config.maxPerAddressDaily > 0 && nextRecipientTotal > config.maxPerAddressDaily) {
         return {
           ok: false,
+          code: "max_per_address_daily",
+          matchedRules,
           message:
             `❌ Bu adrese günlük limit aşılır: ${key.slice(0, 6)}...${key.slice(-4)} için ` +
             `${formatUsd(sentToRecipient)} / ${formatUsd(config.maxPerAddressDaily)} USDC kullanıldı.`,
+          details: {
+            recipient: key,
+            sentToRecipient: Number(sentToRecipient.toFixed(2)),
+            requestedUSDC: input.amountUSDC,
+            maxPerAddressDaily: config.maxPerAddressDaily,
+          },
         };
       }
     }
   }
 
-  return { ok: true };
+  return { ok: true, code: "allow", matchedRules };
 }
 
-export function requireHighValueConfirmation(userId: number | undefined, action: Action, amountUSDC?: number): GuardResult {
+export function requireHighValueConfirmation(
+  userId: number | undefined,
+  action: Action,
+  amountUSDC?: number
+): GuardResult {
   if (!userId || !amountUSDC || config.confirmAboveUSDC <= 0 || amountUSDC < config.confirmAboveUSDC) {
-    return { ok: true };
+    return { ok: true, code: "allow", matchedRules: ["confirm_above_usdc"] };
   }
 
   const fingerprint = fingerprintAction(action);
-  if (!fingerprint) return { ok: true };
+  if (!fingerprint) return { ok: true, code: "allow", matchedRules: ["confirm_above_usdc"] };
 
   const state = ensureState();
   const now = Date.now();
@@ -180,7 +239,7 @@ export function requireHighValueConfirmation(userId: number | undefined, action:
   if (pending && pending.fingerprint === fingerprint && pending.expiresAt > now) {
     delete state.pendingConfirmations[confirmationKey];
     saveState(state);
-    return { ok: true };
+    return { ok: true, code: "allow", matchedRules: ["confirm_above_usdc"] };
   }
 
   state.pendingConfirmations[confirmationKey] = {
@@ -191,9 +250,16 @@ export function requireHighValueConfirmation(userId: number | undefined, action:
 
   return {
     ok: false,
+    code: "confirm_required",
+    matchedRules: ["confirm_above_usdc"],
     message:
       `⚠️ Bu işlem ${formatUsd(amountUSDC)} USDC olduğu için ek onay istiyor.\n\n` +
       `Aynı komutu 10 dakika içinde tekrar gönderirsen işlem devam edecek.`,
+    details: {
+      amountUSDC,
+      confirmAboveUSDC: config.confirmAboveUSDC,
+      ttlMinutes: CONFIRM_TTL_MS / 60000,
+    },
   };
 }
 
@@ -215,4 +281,25 @@ export function recordSuccessfulTransaction(input: TransactionGuardInput) {
   }
 
   saveState(state);
+}
+
+export function getGuardUsageSummary() {
+  const state = ensureState();
+  const now = Date.now();
+  pruneExpiredConfirmations(state, now);
+
+  const cooldownRemainingSeconds =
+    config.cooldownSeconds > 0 && state.lastTxAt
+      ? Math.max(0, Math.ceil((config.cooldownSeconds * 1000 - (now - state.lastTxAt)) / 1000))
+      : 0;
+
+  return {
+    day: state.day,
+    txCount: state.txCount,
+    maxTxPerDay: config.maxTxPerDay,
+    usdcDailyTotal: Number(state.usdcDailyTotal.toFixed(2)),
+    maxDailyUSDC: config.maxDailyUSDC,
+    cooldownRemainingSeconds,
+    pendingConfirmations: Object.keys(state.pendingConfirmations).length,
+  };
 }

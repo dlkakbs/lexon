@@ -65,6 +65,7 @@ After deployment, set the Telegram webhook to your `/api/webhook` route.
 - `/price` - ETH price
 - `/bridge` - bridge info
 - `/policy` - active limits
+- `/audit` - recent policy decisions
 - `/catalog` - x402 capability catalog
 - `/fund` - MoonPay on-ramp
 - `/memory` - saved memory summary
