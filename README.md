@@ -10,7 +10,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 - Send USDC to an address or saved contact
 - Swap ETH and USDC on Base
-- Bridge from Base to 17+ EVM chains
+- Bridge from Base to 10+ EVM chains
 - View multi-chain balances
 - Use text or voice in Telegram
 - Apply OWS-based chain, spend, and contract controls

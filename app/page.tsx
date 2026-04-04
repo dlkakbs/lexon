@@ -11,7 +11,6 @@ export default function Home() {
         className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-3 fade-in-1">
           <span className="text-green font-bold text-lg">lexon</span>
-          <span className="tag tag-green">live</span>
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-muted fade-in-2">
           <a href="#features" className="hover:text-green transition-colors">features</a>
@@ -70,9 +69,9 @@ export default function Home() {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "1px solid var(--border)",
-                  background: "var(--bg-terminal)",
-                  color: "var(--text)",
+                  border: "1px solid var(--green)",
+                  background: "var(--green)",
+                  color: "var(--bg)",
                   borderRadius: 999,
                 }}
               >
@@ -127,7 +126,7 @@ export default function Home() {
               {
                 title: "Bridge",
                 cmd: "bridge",
-                desc: "Bridge from Base to 17+ chains.",
+                desc: "Bridge from Base to 10+ chains.",
               },
               {
                 title: "Portfolio",
@@ -215,118 +214,6 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Bridge chains ── */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-8">
-          <span className="text-muted text-sm">$ </span>
-          <span className="text-green text-sm font-bold">lexon bridge --list-chains</span>
-        </div>
-        <div className="term-card" style={{ padding: "20px 24px" }}>
-          <div className="text-muted text-xs mb-4" style={{ letterSpacing: "0.08em" }}>SUPPORTED BRIDGE DESTINATIONS (FROM BASE · VIA LI.FI + OWS)</div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              "Ethereum","Polygon","Arbitrum","Optimism","BNB Chain",
-              "Avalanche","zkSync Era","Linea","Scroll","Blast",
-              "Mantle","Unichain","Sonic","Berachain","Gnosis","Celo",
-            ].map((chain) => (
-              <span key={chain} className="tag tag-green" style={{ fontSize: 11 }}>{chain}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Commands ref ── */}
-      <section style={{ background: "var(--bg-panel)", borderTop: "1px solid var(--border-dim)", borderBottom: "1px solid var(--border-dim)" }}
-        className="py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <span className="text-muted text-sm">$ </span>
-            <span className="text-green text-sm font-bold">lexon --help</span>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-
-            <div>
-              <div className="text-cyan text-xs mb-4" style={{ letterSpacing: "0.1em" }}>COMMANDS</div>
-              {[
-                ["/wallet",    "Show wallet address + Basescan link"],
-                ["/portfolio", "Multi-chain portfolio (Zerion)"],
-                ["/pnl",       "24h profit/loss"],
-                ["/price",     "Live ETH price"],
-                ["/bridge",    "Bridge info + chain list"],
-                ["/policy",    "Active OWS policy rules"],
-                ["/fund",      "MoonPay on-ramp link"],
-                ["/memory",    "What Lexon knows about you"],
-                ["/update",    "Pull latest from git"],
-                ["/help",      "This menu"],
-              ].map(([cmd, desc]) => (
-                <div key={cmd} className="flex gap-3 py-1.5" style={{ borderBottom: "1px solid var(--border-dim)", fontSize: 12 }}>
-                  <span className="text-green" style={{ minWidth: 90 }}>{cmd}</span>
-                  <span className="text-muted">{desc}</span>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <div className="text-cyan text-xs mb-4" style={{ letterSpacing: "0.1em" }}>ALLOWLIST · WHITELIST</div>
-              {[
-                ["/add 0x… [label]",     "Add address to send allowlist"],
-                ["/remove 0x…",          "Remove from allowlist"],
-                ["/list",                "Show all allowed addresses"],
-                ["/approve 0x… [label]", "Add contract to OWS policy"],
-                ["/unapprove 0x…",       "Remove contract from policy"],
-                ["/contracts",           "List all approved contracts"],
-              ].map(([cmd, desc]) => (
-                <div key={cmd} className="flex gap-3 py-1.5" style={{ borderBottom: "1px solid var(--border-dim)", fontSize: 12 }}>
-                  <span className="text-green" style={{ minWidth: 150, flexShrink: 0 }}>{cmd}</span>
-                  <span className="text-muted">{desc}</span>
-                </div>
-              ))}
-              <div className="text-cyan text-xs mt-6 mb-4" style={{ letterSpacing: "0.1em" }}>NATURAL LANGUAGE</div>
-              {[
-                ['"Send 5 USDC to 0x…"',      "Transfer"],
-                ['"Swap 0.001 ETH to USDC"',  "Swap"],
-                ['"Bridge 10 USDC to Arb"',   "Bridge"],
-                ['"Show my portfolio"',        "Portfolio"],
-                ['"How much did I spend?"',    "Spending history"],
-                ["voice note",                 "Whisper transcribes any language"],
-              ].map(([cmd, desc]) => (
-                <div key={cmd} className="flex gap-3 py-1.5" style={{ borderBottom: "1px solid var(--border-dim)", fontSize: 12 }}>
-                  <span className="text-yellow" style={{ minWidth: 160, flexShrink: 0 }}>{cmd}</span>
-                  <span className="text-muted">{desc}</span>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <div className="text-cyan text-xs mb-4" style={{ letterSpacing: "0.1em" }}>QUICK SETUP</div>
-              <div className="term-window">
-                <div className="term-titlebar">
-                  <span className="term-dot term-dot-red" />
-                  <span className="term-dot term-dot-yellow" />
-                  <span className="term-dot term-dot-green" />
-                  <span className="term-title">terminal</span>
-                </div>
-                <div className="term-body" style={{ fontSize: 12 }}>
-                  <div className="prompt text-green">npm install</div>
-                  <div className="prompt text-green">npx tsx setup.ts</div>
-                  <div className="text-muted" style={{ fontSize: 11, margin: "8px 0" }}>
-                    interactive wizard —<br />
-                    configures all keys + limits
-                  </div>
-                  <div className="prompt text-green">npx tsx dev-bot.ts</div>
-                  <div className="text-green" style={{ fontSize: 11, marginTop: 6 }}>
-                    [OK] lexon agent started<br />
-                    <span className="text-muted">listening for messages...</span>
-                    <span className="blink"> █</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
