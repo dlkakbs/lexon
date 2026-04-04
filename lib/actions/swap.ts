@@ -4,7 +4,7 @@ import {
   USDC_DECIMALS,
 } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
-import { encodeFunctionData, parseEther, parseUnits, formatUnits, serializeTransaction } from "viem";
+import { encodeFunctionData, parseEther, parseUnits, serializeTransaction } from "viem";
 import { config } from "../config";
 import { getETHPriceUSD } from "../skills/price";
 
@@ -16,9 +16,8 @@ export const ROUTERS = {
 } as const;
 
 // Default: Uniswap V3 (deepest ETH/USDC liquidity on Base)
-const SWAP_ROUTER = ROUTERS.uniswap_v3;
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006" as const;
-const POOL_FEE = 500; // 0.05% — best fee tier for ETH/USDC on Base
+const POOL_FEES = [500, 3000, 10000] as const;
 
 const SWAP_ROUTER_ABI = [
   {
@@ -56,7 +55,64 @@ function dexLabel(dex?: string): string {
   return "Uniswap V3";
 }
 
+function ensureSupportedDex(dex?: string): string | null {
+  if (!dex || dex === "uniswap_v3") return null;
+  return `❌ ${dexLabel(dex)} swap routing bu build'de henüz aktif değil. Şimdilik Uniswap V3 kullan.`;
+}
+
+function buildExactInputSingleData(
+  tokenIn: `0x${string}`,
+  tokenOut: `0x${string}`,
+  fee: number,
+  recipient: `0x${string}`,
+  amountIn: bigint
+) {
+  return encodeFunctionData({
+    abi: SWAP_ROUTER_ABI,
+    functionName: "exactInputSingle",
+    args: [
+      {
+        tokenIn,
+        tokenOut,
+        fee,
+        recipient,
+        amountIn,
+        amountOutMinimum: 0n,
+        sqrtPriceLimitX96: 0n,
+      },
+    ],
+  });
+}
+
+async function findUsableSwapPath(
+  from: `0x${string}`,
+  tokenIn: `0x${string}`,
+  tokenOut: `0x${string}`,
+  amountIn: bigint,
+  value: bigint
+) {
+  for (const fee of POOL_FEES) {
+    try {
+      const data = buildExactInputSingleData(tokenIn, tokenOut, fee, from, amountIn);
+      const gas = await publicClient.estimateGas({
+        account: from,
+        to: ROUTERS.uniswap_v3,
+        data,
+        value,
+      });
+      return { fee, data, gas };
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error("No supported Uniswap V3 ETH/USDC pool could be estimated on Base.");
+}
+
 export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<string> {
+  const dexError = ensureSupportedDex(dex);
+  if (dexError) return dexError;
+
   const ethNum = parseFloat(ethAmount);
   if (isNaN(ethNum) || ethNum <= 0) {
     return `❌ Invalid amount: ${ethAmount}`;
@@ -75,43 +131,27 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
   try {
     const from = getWalletAddress() as `0x${string}`;
     const amountIn = parseEther(ethAmount);
-    const router = getRouter(dex);
-
-    const data = encodeFunctionData({
-      abi: SWAP_ROUTER_ABI,
-      functionName: "exactInputSingle",
-      args: [
-        {
-          tokenIn: WETH_ADDRESS,
-          tokenOut: USDC_ADDRESS,
-          fee: POOL_FEE,
-          recipient: from,
-          amountIn,
-          amountOutMinimum: 0n,
-          sqrtPriceLimitX96: 0n,
-        },
-      ],
-    });
 
     const [nonce, gasPrice] = await Promise.all([
       publicClient.getTransactionCount({ address: from }),
       publicClient.getGasPrice(),
     ]);
 
-    const gasEstimate = await publicClient.estimateGas({
-      account: from,
-      to: router,
-      data,
-      value: amountIn,
-    });
+    const { fee, data, gas } = await findUsableSwapPath(
+      from,
+      WETH_ADDRESS,
+      USDC_ADDRESS,
+      amountIn,
+      amountIn
+    );
 
     const txHex = serializeTransaction({
       chainId: 8453,
-      to: router,
+      to: ROUTERS.uniswap_v3,
       data,
       nonce,
       gasPrice,
-      gas: gasEstimate,
+      gas,
       value: amountIn,
     });
 
@@ -120,7 +160,7 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
 
     return (
       `✅ *Swap complete!*\n\n` +
-      `📤 ${ethAmount} ETH → USDC via ${dexLabel(dex)}\n\n` +
+      `📤 ${ethAmount} ETH → USDC via Uniswap V3 (${fee / 10000}% pool)\n\n` +
       `🔗 [View on Basescan](https://basescan.org/tx/${txHash})`
     );
   } catch (err: any) {
@@ -129,6 +169,9 @@ export async function swapETHtoUSDC(ethAmount: string, dex?: string): Promise<st
 }
 
 export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<string> {
+  const dexError = ensureSupportedDex(dex);
+  if (dexError) return dexError;
+
   const usdcNum = parseFloat(usdcAmount);
   if (isNaN(usdcNum) || usdcNum <= 0) {
     return `❌ Invalid amount: ${usdcAmount}`;
@@ -140,6 +183,7 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
   try {
     const from = getWalletAddress() as `0x${string}`;
     const amountIn = parseUnits(usdcAmount, USDC_DECIMALS);
+    const router = ROUTERS.uniswap_v3;
 
     // First approve USDC spend
     const USDC_ABI = [
@@ -158,7 +202,7 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
     const approveData = encodeFunctionData({
       abi: USDC_ABI,
       functionName: "approve",
-      args: [SWAP_ROUTER, amountIn],
+      args: [router, amountIn],
     });
 
     const [nonce, gasPrice] = await Promise.all([
@@ -186,29 +230,13 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
     await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
 
     // Now swap
-    const swapData = encodeFunctionData({
-      abi: SWAP_ROUTER_ABI,
-      functionName: "exactInputSingle",
-      args: [
-        {
-          tokenIn: USDC_ADDRESS,
-          tokenOut: WETH_ADDRESS,
-          fee: POOL_FEE,
-          recipient: from,
-          amountIn,
-          amountOutMinimum: 0n,
-          sqrtPriceLimitX96: 0n,
-        },
-      ],
-    });
-
-    const router = getRouter(dex);
-
-    const swapGas = await publicClient.estimateGas({
-      account: from,
-      to: router,
-      data: swapData,
-    });
+    const { fee, data: swapData, gas: swapGas } = await findUsableSwapPath(
+      from,
+      USDC_ADDRESS,
+      WETH_ADDRESS,
+      amountIn,
+      0n
+    );
 
     const swapTx = serializeTransaction({
       chainId: 8453,
@@ -225,7 +253,7 @@ export async function swapUSDCtoETH(usdcAmount: string, dex?: string): Promise<s
 
     return (
       `✅ *Swap complete!*\n\n` +
-      `📤 $${usdcAmount} USDC → ETH via ${dexLabel(dex)}\n\n` +
+      `📤 $${usdcAmount} USDC → ETH via Uniswap V3 (${fee / 10000}% pool)\n\n` +
       `🔗 [View on Basescan](https://basescan.org/tx/${swapTxHash})`
     );
   } catch (err: any) {

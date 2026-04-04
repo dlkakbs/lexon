@@ -162,6 +162,30 @@ Sesli mesaj gönder — Whisper otomatik çevirir.
 /help — Bu menü
 `.trim();
 
+const KNOWN_COMMANDS = new Set([
+  "start",
+  "help",
+  "wallet",
+  "catalog",
+  "research",
+  "audit",
+  "add",
+  "approve",
+  "unapprove",
+  "contracts",
+  "allow",
+  "remove",
+  "fund",
+  "list",
+  "portfolio",
+  "scorewallet",
+  "walletpatterns",
+  "price",
+  "bridge",
+  "policy",
+  "memory",
+]);
+
 export function registerHandlers(bot: Bot, token: string) {
   bot.command("start", async (ctx) => {
     await ctx.reply(
@@ -470,7 +494,17 @@ export function registerHandlers(bot: Bot, token: string) {
 
   bot.on("message:text", async (ctx) => {
     const text = ctx.message.text;
-    if (text.startsWith("/")) return;
+    if (text.startsWith("/")) {
+      const command = text.slice(1).split(/\s+/)[0]?.split("@")[0]?.toLowerCase();
+      if (command && !KNOWN_COMMANDS.has(command)) {
+        await ctx.reply(
+          `❌ Bilinmeyen komut: \`/${command}\`\n\n` +
+          `Doğru komutları görmek için \`/help\` yaz.`,
+          { parse_mode: "Markdown" }
+        );
+      }
+      return;
+    }
     await ctx.replyWithChatAction("typing");
     await handleCommand(ctx);
   });

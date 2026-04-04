@@ -3,6 +3,7 @@ import {
   USDC_ADDRESS,
   USDC_DECIMALS,
   USDC_ABI,
+  getUSDCBalance,
 } from "../base";
 import { getWalletAddress, owsSignAndSend } from "../wallet";
 import { isAllowed } from "../allowlist";
@@ -33,6 +34,15 @@ export async function sendUSDC(to: string, amount: string): Promise<string> {
 
   try {
     const from = getWalletAddress() as `0x${string}`;
+    const balance = parseFloat(await getUSDCBalance(from));
+    if (Number.isFinite(balance) && balance < amountNum) {
+      return (
+        `❌ Yetersiz USDC bakiyesi.\n\n` +
+        `Cüzdandaki USDC: *${balance.toFixed(4)}*\n` +
+        `Göndermek istediğin: *${amountNum.toFixed(4)}*\n\n` +
+        `Önce ETH → USDC swap yapman gerekiyor.`
+      );
+    }
     const value = parseUnits(amount, USDC_DECIMALS);
 
     // Build calldata
