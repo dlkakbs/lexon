@@ -66,13 +66,6 @@ lexon-gateway
 
 Set `TELEGRAM_OWNER_IDS` in `.env.local` to the Telegram user IDs allowed to use wallet, admin, and paid buyer flows.
 
-To deploy the web app:
-
-```bash
-vercel --prod
-```
-
-After deployment, set the Telegram webhook to your `/api/webhook` route.
 
 ## Commands
 
