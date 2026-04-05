@@ -10,6 +10,7 @@ const CONFIRM_TTL_MS = 10 * 60 * 1000;
 
 type PendingConfirmation = {
   fingerprint: string;
+  action: Action;
   expiresAt: number;
 };
 
@@ -244,6 +245,7 @@ export function requireHighValueConfirmation(
 
   state.pendingConfirmations[confirmationKey] = {
     fingerprint,
+    action,
     expiresAt: now + CONFIRM_TTL_MS,
   };
   saveState(state);
@@ -302,4 +304,43 @@ export function getGuardUsageSummary() {
     cooldownRemainingSeconds,
     pendingConfirmations: Object.keys(state.pendingConfirmations).length,
   };
+}
+
+function isAffirmativeConfirmation(text: string): boolean {
+  const normalized = text.trim().toLowerCase();
+  return [
+    "evet",
+    "evet gönder",
+    "gönder",
+    "onayla",
+    "devam et",
+    "yes",
+    "yes send",
+    "confirm",
+    "confirm send",
+    "proceed",
+  ].includes(normalized);
+}
+
+export function consumePendingConfirmationAction(
+  userId: string | number | undefined,
+  text: string
+): Action | null {
+  if (!userId || !isAffirmativeConfirmation(text)) return null;
+
+  const state = ensureState();
+  const now = Date.now();
+  pruneExpiredConfirmations(state, now);
+
+  const confirmationKey = String(userId);
+  const pending = state.pendingConfirmations[confirmationKey];
+  if (!pending || pending.expiresAt <= now) {
+    delete state.pendingConfirmations[confirmationKey];
+    saveState(state);
+    return null;
+  }
+
+  delete state.pendingConfirmations[confirmationKey];
+  saveState(state);
+  return pending.action;
 }

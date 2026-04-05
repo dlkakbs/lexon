@@ -8,7 +8,7 @@ Built for the [OWS Hackathon 2026](https://docs.openwallet.sh/).
 
 ## What It Does
 
-- Send USDC on Base
+- Send ETH or USDC on Base
 - Swap ETH and USDC on Base
 - Bridge from Base to supported chains
 - View wallet balances and activity

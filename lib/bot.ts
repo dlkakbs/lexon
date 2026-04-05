@@ -2,7 +2,7 @@ import { Bot, Context, webhookCallback } from "grammy";
 import { config } from "./config";
 import { generateChatReply, parseIntent, type Action } from "./intent";
 import { transcribeVoice } from "./voice";
-import { sendUSDC } from "./actions/send";
+import { sendETH, sendUSDC } from "./actions/send";
 import { checkBalance } from "./actions/balance";
 import { getWalletAddress } from "./wallet";
 import { addToAllowlist, removeFromAllowlist, getAllowlist } from "./allowlist";
@@ -16,6 +16,7 @@ import { getWalletPatterns, scoreWallet } from "./skills/allium";
 import { extractTxHash, formatPolicyTraceSummary, logPolicyTrace } from "./policy-trace";
 import { buyMarketResearch } from "./x402/research-client";
 import {
+  consumePendingConfirmationAction,
   enforceTransactionGuards,
   getGuardUsageSummary,
   recordSuccessfulTransaction,
@@ -39,7 +40,7 @@ function describeRequestedAction(
   details: Record<string, string | number | undefined>
 ): string {
   if (kind === "send") {
-    return `send ${details.amount ?? "?"} USDC to ${details.to ?? "recipient"}`;
+    return `send ${details.amount ?? "?"} ${details.asset ?? "USDC"} to ${details.to ?? "recipient"}`;
   }
   if (kind === "swap") {
     return `swap ${details.amount ?? "?"} ${details.fromToken ?? "asset"} to ${details.toToken ?? "asset"}`;
@@ -98,8 +99,9 @@ const HELP_TEXT = `
 
 *Yapabileceklerin:*
 
-💸 *USDC Gönder*
+💸 *ETH / USDC Gönder*
 "Send 1.5 USDC to 0x1234...abcd"
+"Send 0.0015 ETH to 0x1234...abcd"
 "Ali'ye 2 USDC gönder" _(kayıtlı isim)_
 
 💰 *Bakiye Sorgula*
@@ -563,7 +565,7 @@ async function handleCommand(ctx: Context, override?: string) {
 
   // Kullanıcı bağlamını Honcho'dan al (intent parsing'e ekle)
   const userContext = userId ? await getUserContext(userId) : "";
-  const action = await parseIntent(text, userContext);
+  const action = consumePendingConfirmationAction(userId, text) ?? await parseIntent(text, userContext);
 
   const ownerOnlyActions = new Set<Action["type"]>([
     "send",
@@ -589,8 +591,13 @@ async function handleCommand(ctx: Context, override?: string) {
   switch (action.type) {
     case "send": {
       let to = action.to;
+      const asset = action.asset ?? "USDC";
       const amount = Number.parseFloat(action.amount);
-      const requestedAction = describeRequestedAction("send", { amount: action.amount, to: action.to || action.name });
+      const requestedAction = describeRequestedAction("send", {
+        amount: action.amount,
+        asset,
+        to: action.to || action.name,
+      });
 
       // İsimle gönderim: "Ali'ye gönder" → adres çözümle
       if ((!to || !to.startsWith("0x")) && action.name && userId) {
@@ -625,14 +632,17 @@ async function handleCommand(ctx: Context, override?: string) {
             details: { recipient: to },
           });
           await ctx.reply(
-            `⚠️ *Yeni adres!*\n\n\`${to}\`\n\nBu adrese daha önce göndermemişsin. Devam etmek için tekrar "evet gönder ${action.amount} USDC to ${to}" yaz.`,
+            `⚠️ *Yeni adres!*\n\n\`${to}\`\n\nBu adrese daha önce göndermemişsin. Devam etmek için aynı komutu tekrar gönder.`,
             { parse_mode: "Markdown" }
           );
           break;
         }
       }
 
-      const confirmation = requireHighValueConfirmation(userId, { ...action, to }, amount);
+      const confirmation =
+        asset === "USDC"
+          ? requireHighValueConfirmation(userId, { ...action, to, asset }, amount)
+          : { ok: true as const, code: "allow" as const, matchedRules: ["confirm_above_usdc"] };
       if (!confirmation.ok) {
         response = confirmation.message;
         logPolicyTrace({
@@ -650,7 +660,7 @@ async function handleCommand(ctx: Context, override?: string) {
 
       const guard = enforceTransactionGuards({
         kind: "send",
-        amountUSDC: Number.isFinite(amount) ? amount : undefined,
+        amountUSDC: asset === "USDC" && Number.isFinite(amount) ? amount : undefined,
         recipient: to,
       });
       if (!guard.ok) {
@@ -669,11 +679,11 @@ async function handleCommand(ctx: Context, override?: string) {
       }
 
       const msg = await ctx.reply("⏳ İşlem hazırlanıyor...");
-      response = await sendUSDC(to, action.amount);
+      response = asset === "ETH" ? await sendETH(to, action.amount) : await sendUSDC(to, action.amount);
       if (isSuccessfulResponse(response)) {
         recordSuccessfulTransaction({
           kind: "send",
-          amountUSDC: Number.isFinite(amount) ? amount : undefined,
+          amountUSDC: asset === "USDC" && Number.isFinite(amount) ? amount : undefined,
           recipient: to,
         });
         logPolicyTrace({
@@ -682,7 +692,7 @@ async function handleCommand(ctx: Context, override?: string) {
           requestedAction,
           guardCode: guard.code,
           matchedRules: [...confirmation.matchedRules, ...guard.matchedRules],
-          executedAction: describeExecutedAction("send", { amount: action.amount, to }),
+          executedAction: describeExecutedAction("send", { amount: action.amount, asset, to }),
           executionTxHash: extractTxHash(response) ?? undefined,
           details: { recipient: to, usage: getGuardUsageSummary() },
         });
