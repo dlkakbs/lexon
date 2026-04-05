@@ -1,7 +1,7 @@
 import { config } from "./config";
 
 export type Action =
-  | { type: "send"; to: string; amount: string; name?: string }
+  | { type: "send"; to: string; amount: string; asset?: "USDC" | "ETH"; name?: string }
   | { type: "balance"; address?: string }
   | { type: "chain_balance"; chain: string; address?: string }
   | { type: "swap_eth_usdc"; amount: string; dex?: string }
@@ -24,11 +24,13 @@ function buildSystemPrompt(userContext: string): string {
 
 Extract the user's intent and return ONLY valid JSON matching one of these schemas:
 
-1. Send USDC (address known):
-{"type":"send","to":"0x...","amount":"5.00"}
+1. Send tokens on Base (address known):
+{"type":"send","to":"0x...","amount":"5.00","asset":"USDC"}
+{"type":"send","to":"0x...","amount":"0.0015","asset":"ETH"}
 
-2. Send USDC (by name/nickname — no 0x address given):
-{"type":"send","to":"","amount":"5.00","name":"Ali"}
+2. Send tokens on Base (by name/nickname — no 0x address given):
+{"type":"send","to":"","amount":"5.00","asset":"USDC","name":"Ali"}
+{"type":"send","to":"","amount":"0.0015","asset":"ETH","name":"Ali"}
 
 3. Check balance:
 {"type":"balance","address":"0x..."} or {"type":"balance"} for own wallet
@@ -98,6 +100,7 @@ Triggers: "token bul", "search token", "PEPE nedir", "hangi chain", adres bilmed
 Rules:
 - "amount" must be a string with max 6 decimal places
 - "to" must be a valid 0x Ethereum address (or empty string if only name given)
+- "asset" for send can only be "USDC" or "ETH"; default to "USDC" if omitted
 - Swap triggers: "swap", "exchange", "convert", "buy ETH", "buy USDC"
 - If user says "swap 3 USDC to ETH" → swap_usdc_eth with amount "3"
 - If user says "swap 0.001 ETH to USDC" or "buy USDC with ETH" → swap_eth_usdc
@@ -223,6 +226,8 @@ function classifyToolIntent(text: string): Action | null {
   const normalized = text.trim();
   const lower = normalized.toLowerCase();
   const address = normalized.match(/0x[a-fA-F0-9]{40}/)?.[0];
+  const amountMatch = normalized.match(/(\d+(?:[.,]\d{1,6})?)/);
+  const amount = amountMatch?.[1]?.replace(",", ".");
 
   const chainAliases: Record<string, string> = {
     arbitrum: "arbitrum",
@@ -317,6 +322,18 @@ function classifyToolIntent(text: string): Action | null {
   ];
   if (researchHints.some((hint) => lower.includes(hint))) {
     return { type: "research_query", query: normalized };
+  }
+
+  const sendHints = ["send", "gönder", "transfer", "yolla"];
+  const mentionsEth = /\beth\b/.test(lower);
+  const mentionsUsdc = /\busdc\b/.test(lower);
+  if (address && amount && sendHints.some((hint) => lower.includes(hint))) {
+    return {
+      type: "send",
+      to: address,
+      amount,
+      asset: mentionsEth ? "ETH" : mentionsUsdc ? "USDC" : "USDC",
+    };
   }
 
   return null;
